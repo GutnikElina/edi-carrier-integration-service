@@ -8,7 +8,7 @@ on:
 
 jobs:
   run-shared-ci:
-    uses: MrKravz/shared-ci-workflows/.github/workflows/ci.yaml@e96ef9c1350d67fb6a49eb7c1926dcda39fda7cb
+    uses: MrKravz/shared-ci-workflows/.github/workflows/ci.yaml@662608a08572a0de1aaf581a043da711a3e362d2
     with:
       build-tool: 'maven'
       sonar-args: >
