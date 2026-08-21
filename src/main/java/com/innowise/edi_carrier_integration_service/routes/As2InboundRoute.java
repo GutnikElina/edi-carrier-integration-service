@@ -24,22 +24,28 @@ public final class As2InboundRoute extends RouteBuilder {
   private static final String LOG_RECEIVED = "Incoming AS2 message received";
 
   /** Log message for processing completion. */
-  private static final String LOG_FINISHED = "AS2 message processing finished successfully";
+  private static final String LOG_FINISHED = "AS2 message processing" + " finished successfully";
 
+  /** Configuration properties for the AS2 server (host, port, path, etc.). */
   private final As2Configuration as2Config;
-  private final MdnStubProcessor mdnStubProcessor;
 
   /**
-   * Configures the AS2 inbound route. Sets up the endpoint and processing pipeline.
-   *
-   * @throws Exception if route configuration fails
+   * Processor that logs incoming AS2 messages. Currently, a stub; full MDN generation will be
+   * implemented later.
    */
-  @Override
-  public void configure() throws Exception {
-    final String serverUrl =
-        "http://" + as2Config.getHost() + ":" + as2Config.getPort() + as2Config.getPath();
-    log.info(LOG_SERVER_START, serverUrl);
+  private final MdnStubProcessor mdnStubProcessor;
 
+  /** Configures the AS2 inbound route. Sets up the endpoint and processing pipeline. */
+  @Override
+  public void configure() {
+    final String serverUrl =
+        new StringBuilder("http://")
+            .append(as2Config.getHost())
+            .append(":")
+            .append(as2Config.getPort())
+            .append(as2Config.getPath())
+            .toString();
+    log.info(LOG_SERVER_START, serverUrl);
     final String as2Uri = String.format(AS2_URI_PATTERN, as2Config.getPort(), as2Config.getPath());
 
     from(as2Uri)
