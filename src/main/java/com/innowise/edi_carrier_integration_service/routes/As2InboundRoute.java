@@ -13,9 +13,9 @@ import org.springframework.stereotype.Component;
 public class As2InboundRoute extends RouteBuilder {
 
     private static final String AS2_URI_PATTERN = "as2://server/listen?serverPortNumber=%d&requestUriPattern=%s";
-    private static final String LOG_SERVER_START = "AS2 сервер запускается на: {}";
-    private static final String LOG_RECEIVED = "Получено AS2 сообщение";
-    private static final String LOG_FINISHED = "Обработка AS2 сообщения завершена";
+    private static final String LOG_SERVER_START = "Starting AS2 server on: {}";
+    private static final String LOG_RECEIVED = "Incoming AS2 message received";
+    private static final String LOG_FINISHED = "AS2 message processing finished successfully";
 
     private final As2Configuration as2Config;
     private final MdnStubProcessor mdnStubProcessor;

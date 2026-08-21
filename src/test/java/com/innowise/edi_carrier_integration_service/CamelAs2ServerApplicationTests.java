@@ -6,15 +6,16 @@ import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.spring.junit5.UseAdviceWith;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.DirtiesContext;
 
 @SpringBootTest
 @UseAdviceWith
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class CamelAs2ServerApplicationTests {
 
     @Autowired
@@ -26,7 +27,7 @@ class CamelAs2ServerApplicationTests {
     @EndpointInject("mock:result")
     MockEndpoint mockResult;
 
-    @BeforeEach
+    @BeforeAll
     void setUp() throws Exception {
         AdviceWith.adviceWith(
                 camelContext,
@@ -37,6 +38,11 @@ class CamelAs2ServerApplicationTests {
                 }
         );
         camelContext.start();
+    }
+
+    @BeforeEach
+    void resetMocks() {
+        mockResult.reset();
     }
 
     @Test
@@ -51,7 +57,7 @@ class CamelAs2ServerApplicationTests {
                 """;
 
         mockResult.expectedMessageCount(1);
-        mockResult.expectedBodyReceived().body().contains("ISA*00*");
+        mockResult.expectedBodiesReceived(edi);
 
         producerTemplate.sendBody("direct:as2-test", edi);
 
@@ -61,10 +67,10 @@ class CamelAs2ServerApplicationTests {
     @Test
     void shouldProcessEmptyBody() throws Exception {
         mockResult.expectedMessageCount(1);
+        mockResult.expectedBodiesReceived("");
 
         producerTemplate.sendBody("direct:as2-test", "");
 
         mockResult.assertIsSatisfied();
     }
-
 }
