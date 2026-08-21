@@ -13,18 +13,19 @@ import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+/** Integration tests for AS2 inbound route. */
 @SpringBootTest
 @UseAdviceWith
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class CamelAs2ServerApplicationTests {
 
-  @Autowired CamelContext camelContext;
+  @Autowired private CamelContext camelContext;
 
   @EndpointInject("direct:as2-test")
-  ProducerTemplate producerTemplate;
+  private ProducerTemplate producerTemplate;
 
   @EndpointInject("mock:result")
-  MockEndpoint mockResult;
+  private MockEndpoint mockResult;
 
   @BeforeAll
   void setUp() throws Exception {
@@ -45,15 +46,15 @@ class CamelAs2ServerApplicationTests {
 
   @Test
   void shouldReceiveEdiMessage() throws Exception {
-    String edi =
+    final String edi =
         """
-                ISA*00*          *00*          *ZZ*SENDER         *ZZ*RECEIVER       *260821*1000*U*00401*000000001*0*P*>~
-                GS*PO*SENDER*RECEIVER*20260821*1000*1*X*004010~
-                ST*850*0001~
-                SE*2*0001~
-                GE*1*1~
-                IEA*1*000000001~
-                """;
+            ISA*00*          *00*          *ZZ*SENDER         *ZZ*RECEIVER       *260821*1000*U*00401*000000001*0*P*>~
+            GS*PO*SENDER*RECEIVER*20260821*1000*1*X*004010~
+            ST*850*0001~
+            SE*2*0001~
+            GE*1*1~
+            IEA*1*000000001~
+            """;
 
     mockResult.expectedMessageCount(1);
     mockResult.expectedBodiesReceived(edi);

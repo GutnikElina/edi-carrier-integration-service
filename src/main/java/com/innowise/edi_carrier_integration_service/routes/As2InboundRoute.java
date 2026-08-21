@@ -7,27 +7,40 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.builder.RouteBuilder;
 import org.springframework.stereotype.Component;
 
+/** Camel route for receiving AS2 messages. */
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class As2InboundRoute extends RouteBuilder {
+public final class As2InboundRoute extends RouteBuilder {
 
+  /** URI pattern for AS2 server endpoint. */
   private static final String AS2_URI_PATTERN =
       "as2://server/listen?serverPortNumber=%d&requestUriPattern=%s";
+
+  /** Log message for server start. */
   private static final String LOG_SERVER_START = "Starting AS2 server on: {}";
+
+  /** Log message for incoming message. */
   private static final String LOG_RECEIVED = "Incoming AS2 message received";
+
+  /** Log message for processing completion. */
   private static final String LOG_FINISHED = "AS2 message processing finished successfully";
 
   private final As2Configuration as2Config;
   private final MdnStubProcessor mdnStubProcessor;
 
+  /**
+   * Configures the AS2 inbound route. Sets up the endpoint and processing pipeline.
+   *
+   * @throws Exception if route configuration fails
+   */
   @Override
-  public void configure() {
-    String serverUrl =
+  public void configure() throws Exception {
+    final String serverUrl =
         "http://" + as2Config.getHost() + ":" + as2Config.getPort() + as2Config.getPath();
     log.info(LOG_SERVER_START, serverUrl);
 
-    String as2Uri = String.format(AS2_URI_PATTERN, as2Config.getPort(), as2Config.getPath());
+    final String as2Uri = String.format(AS2_URI_PATTERN, as2Config.getPort(), as2Config.getPath());
 
     from(as2Uri)
         .routeId("as2-inbound-route")

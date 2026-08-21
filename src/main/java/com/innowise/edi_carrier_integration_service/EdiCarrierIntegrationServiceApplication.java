@@ -2,11 +2,9 @@ package com.innowise.edi_carrier_integration_service;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 
 @SpringBootApplication(proxyBeanMethods = false)
-@ConfigurationPropertiesScan
-public class EdiCarrierIntegrationServiceApplication {
+public final class EdiCarrierIntegrationServiceApplication {
   /**
    * Main method to start the Spring Boot application.
    *
