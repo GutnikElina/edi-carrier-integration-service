@@ -1,7 +1,6 @@
 spring:
   application:
-    name: camel-as2-server
-
+    name: edi_carrier_integration_service
 camel:
   main:
     name: CamelAS2Server
