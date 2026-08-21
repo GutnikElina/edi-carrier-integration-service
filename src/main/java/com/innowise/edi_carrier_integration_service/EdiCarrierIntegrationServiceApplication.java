@@ -4,12 +4,20 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 
-@SpringBootApplication
+@SpringBootApplication(proxyBeanMethods = false)
 @ConfigurationPropertiesScan
 public class EdiCarrierIntegrationServiceApplication {
+  /**
+   * Main method to start the Spring Boot application.
+   *
+   * @param args command line arguments
+   */
+  public static void main(final String[] args) {
+    Class<?> appClass = EdiCarrierIntegrationServiceApplication.class;
+    SpringApplication.run(appClass, args);
+  }
 
-	public static void main(String[] args) {
-		SpringApplication.run(EdiCarrierIntegrationServiceApplication.class, args);
-	}
-
+  private EdiCarrierIntegrationServiceApplication() {
+    super();
+  }
 }
