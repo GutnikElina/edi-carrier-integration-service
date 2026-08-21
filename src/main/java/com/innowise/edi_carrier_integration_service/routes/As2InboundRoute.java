@@ -35,7 +35,7 @@ public final class As2InboundRoute extends RouteBuilder {
    */
   private final MdnStubProcessor mdnStubProcessor;
 
-  /** Configures the AS2 inbound route. Sets up the endpoint and processing pipeline. */
+  /** Configures the AS2 inbound route. * Sets up the endpoint and processing pipeline. */
   @Override
   public void configure() {
     final String serverUrl =
