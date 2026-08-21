@@ -1,0 +1,3 @@
+spring:
+  application:
+    name: edi_carrier_integration_service
