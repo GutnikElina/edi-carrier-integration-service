@@ -9,11 +9,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class MdnStubProcessor implements Processor {
 
-    @Override
-    public void process(Exchange exchange) throws Exception {
-        String body = exchange.getMessage().getBody(String.class);
+  @Override
+  public void process(Exchange exchange) throws Exception {
+    String body = exchange.getMessage().getBody(String.class);
 
-        log.info("AS2 message received");
-        log.info("EDI body:\n{}", body);
-    }
+    log.info("AS2 message received");
+    log.info("EDI body:\n{}", body);
+  }
 }
