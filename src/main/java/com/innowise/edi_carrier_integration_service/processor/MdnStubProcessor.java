@@ -1,4 +1,4 @@
-package com.innowisetrainees.camel_as2_server.processor;
+package com.innowise.edi_carrier_integration_service.processor;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.Exchange;

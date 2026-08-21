@@ -1,7 +1,7 @@
-package com.innowisetrainees.camel_as2_server.routes;
+package com.innowise.edi_carrier_integration_service.routes;
 
-import com.innowisetrainees.camel_as2_server.config.As2Configuration;
-import com.innowisetrainees.camel_as2_server.processor.MdnStubProcessor;
+import com.innowise.edi_carrier_integration_service.config.As2Configuration;
+import com.innowise.edi_carrier_integration_service.processor.MdnStubProcessor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.builder.RouteBuilder;

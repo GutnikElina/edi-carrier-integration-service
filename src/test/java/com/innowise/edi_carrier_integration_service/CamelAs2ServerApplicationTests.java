@@ -1,4 +1,4 @@
-package com.innowisetrainees.camel_as2_server;
+package com.innowise.edi_carrier_integration_service;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.EndpointInject;

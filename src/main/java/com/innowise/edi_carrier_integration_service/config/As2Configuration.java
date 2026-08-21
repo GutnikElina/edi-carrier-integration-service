@@ -1,4 +1,4 @@
-package com.innowisetrainees.camel_as2_server.config;
+package com.innowise.edi_carrier_integration_service.config;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
