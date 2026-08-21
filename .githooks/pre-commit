@@ -1,0 +1,15 @@
+#!/bin/sh
+echo "Running pre-commit checks (Spotless)..."
+
+./mvnw spotless:check
+
+if [ $? -ne 0 ]; then
+  echo "Error: Code style validation failed."
+  echo "Please follow these steps to fix it:"
+  echo "   1. Run './mvnw spotless:apply' to auto-format the code."
+  echo "   2. Stage the fixed files using 'git add .'"
+  echo "   3. Run the 'git commit' command again."
+  exit 1
+fi
+
+echo "Code is clean! Creating commit..."
