@@ -12,7 +12,7 @@ jobs:
     with:
       build-tool: 'maven'
       sonar-args: >
-        -Dsonar.projectKey=GutnikElina_warehouse-crossdock-service
+        -Dsonar.projectKey=GutnikElina_edi-carrier-integration-service
         -Dsonar.organization=gutnikelina
         -Dsonar.host.url=https://sonarcloud.io
         -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
