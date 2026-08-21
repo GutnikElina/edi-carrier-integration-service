@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: camel-as2-server
+
+camel:
+  main:
+    name: CamelAS2Server
+  springboot:
+    main-run-controller: true
+
+as2:
+  server:
+    id: AS2-SERVER-001
+    host: localhost
+    port: 9090
+    path: /as2/inbound
+    partner-id: TRADING-PARTNER-001
+
+logging:
+  level:
+    org:
+      apache:
+        camel: INFO
+    com:
+      example:
+        as2: DEBUG
