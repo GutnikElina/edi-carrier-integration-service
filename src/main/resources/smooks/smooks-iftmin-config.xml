@@ -1,14 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <smooks-resource-list xmlns="https://www.smooks.org/xsd/smooks-2.0.xsd"
-                      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                      xmlns:edi="https://www.smooks.org/xsd/smooks/edi-2.0.xsd"
-                      xmlns:jb="https://www.smooks.org/xsd/smooks/javabean-1.6.xsd"
-                      xsi:schemaLocation="
-                          https://www.smooks.org/xsd/smooks-2.0.xsd https://www.smooks.org/xsd/smooks-2.0.xsd
-                          https://www.smooks.org/xsd/smooks/edi-2.0.xsd https://www.smooks.org/xsd/smooks/edi-2.0.xsd
-                          https://www.smooks.org/xsd/smooks/javabean-1.6.xsd https://www.smooks.org/xsd/smooks/javabean-1.6.xsd">
+                      xmlns:jb="https://www.smooks.org/xsd/smooks/javabean-1.6.xsd">
 
-    <edi:reader mappingModel="smooks/edi-rules/iftmin-d96a-mapping.xml"/>
+    <reader class="org.smooks.cartridges.edi.EdiReader">
+        <params>
+            <param name="mappingModel">smooks/edi-rules/iftmin-d96a-mapping.xml</param>
+        </params>
+    </reader>
 
     <jb:bean class="com.innowise.edi_carrier_integration_service.edi.domain.model.IftminInstructionDto"
              beanId="iftminDto"
