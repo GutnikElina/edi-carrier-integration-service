@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<smooks-resource-list xmlns="https://www.smooks.org/xsd/smooks-2.0.xsd"
+                      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                      xmlns:edi="https://www.smooks.org/xsd/smooks/edi-2.0.xsd"
+                      xmlns:jb="https://www.smooks.org/xsd/smooks/javabean-1.6.xsd"
+                      xsi:schemaLocation="
+                          https://www.smooks.org/xsd/smooks-2.0.xsd https://www.smooks.org/xsd/smooks-2.0.xsd
+                          https://www.smooks.org/xsd/smooks/edi-2.0.xsd https://www.smooks.org/xsd/smooks/edi-2.0.xsd
+                          https://www.smooks.org/xsd/smooks/javabean-1.6.xsd https://www.smooks.org/xsd/smooks/javabean-1.6.xsd">
+
+    <edi:reader mappingModel="smooks/edi-rules/iftmin-d96a-mapping.xml"/>
+
+    <jb:bean class="com.innowise.edi_carrier_integration_service.edi.domain.model.IftminInstructionDto"
+             beanId="iftminDto"
+             createOnElement="IFTMIN">
+        <jb:value property="controlNumber" data="IFTMIN/BGM/C106/e1004"/>
+        <jb:value property="documentType" data="IFTMIN/BGM/C002/e1001"/>
+        <jb:value property="consignorName" data="IFTMIN/NAD[e3035='CZ']/C080/e3036"/>
+        <jb:value property="consignorAddress" data="IFTMIN/NAD[e3035='CZ']/C059/e3042"/>
+        <jb:value property="consigneeName" data="IFTMIN/NAD[e3035='CN']/C080/e3036"/>
+        <jb:value property="consigneeAddress" data="IFTMIN/NAD[e3035='CN']/C059/e3042"/>
+        <jb:value property="carrierName" data="IFTMIN/NAD[e3035='CA']/C080/e3036"/>
+    </jb:bean>
+
+</smooks-resource-list>

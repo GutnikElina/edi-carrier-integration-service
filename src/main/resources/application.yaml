@@ -1,3 +1,33 @@
 spring:
   application:
     name: edi_carrier_integration_service
+  main:
+    banner-mode: off
+
+server:
+  port: ${SERVER_PORT:8080}
+
+edi:
+  pipeline:
+    max-payload-bytes: ${EDI_MAX_PAYLOAD_BYTES:20971520}
+  archive:
+    minio:
+      endpoint: ${MINIO_ENDPOINT:http://localhost:9000}
+      access-key: ${MINIO_ACCESS_KEY:minioadmin}
+      secret-key: ${MINIO_SECRET_KEY:minioadmin}
+      bucket: ${MINIO_BUCKET:edi-archive}
+  security:
+    keystore:
+      path: ${KEYSTORE_PATH:/etc/secrets/keystore.p12}
+      password: ${KEYSTORE_PASSWORD:keystorepassword}
+      type: ${KEYSTORE_TYPE:PKCS12}
+    truststore:
+      path: ${TRUSTSTORE_PATH:/etc/secrets/truststore.p12}
+      password: ${TRUSTSTORE_PASSWORD:truststorepassword}
+      type: ${TRUSTSTORE_TYPE:PKCS12}
+
+logging:
+  level:
+    com.innowise.edi_carrier_integration_service: ${LOGGING_LEVEL_APP:INFO}
+    org.smooks: ${LOGGING_LEVEL_SMOOKS:WARN}
+    org.bouncycastle: ${LOGGING_LEVEL_BC:WARN}
