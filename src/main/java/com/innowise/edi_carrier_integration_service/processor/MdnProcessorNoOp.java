@@ -3,6 +3,7 @@ package com.innowise.edi_carrier_integration_service.processor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
 /**
@@ -11,7 +12,8 @@ import org.springframework.stereotype.Component;
  */
 @Slf4j
 @Component
-public final class MdnStubProcessor implements Processor {
+@Primary
+public final class MdnProcessorNoOp implements Processor {
 
   /**
    * Processes the incoming exchange by logging the message body.

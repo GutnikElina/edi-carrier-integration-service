@@ -1,9 +1,9 @@
 package com.innowise.edi_carrier_integration_service.routes;
 
 import com.innowise.edi_carrier_integration_service.config.As2Configuration;
-import com.innowise.edi_carrier_integration_service.processor.MdnStubProcessor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.springframework.stereotype.Component;
 
@@ -33,25 +33,25 @@ public final class As2InboundRoute extends RouteBuilder {
    * Processor that logs incoming AS2 messages. Currently, a stub; full MDN generation will be
    * implemented later.
    */
-  private final MdnStubProcessor mdnStubProcessor;
+  private final Processor mdnProcessor;
 
   /** Configures the AS2 inbound route. * Sets up the endpoint and processing pipeline. */
   @Override
   public void configure() {
     final String serverUrl =
         new StringBuilder("http://")
-            .append(as2Config.getHost())
+            .append(as2Config.getHOST())
             .append(":")
-            .append(as2Config.getPort())
-            .append(as2Config.getPath())
+            .append(as2Config.getPORT())
+            .append(as2Config.getPATH())
             .toString();
     log.info(LOG_SERVER_START, serverUrl);
-    final String as2Uri = String.format(AS2_URI_PATTERN, as2Config.getPort(), as2Config.getPath());
+    final String as2Uri = String.format(AS2_URI_PATTERN, as2Config.getPORT(), as2Config.getPATH());
 
     from(as2Uri)
         .routeId("as2-inbound-route")
         .log(LOG_RECEIVED)
-        .process(mdnStubProcessor)
+        .process(mdnProcessor)
         .log(LOG_FINISHED);
   }
 }

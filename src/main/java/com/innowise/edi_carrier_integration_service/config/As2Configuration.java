@@ -11,19 +11,19 @@ import org.springframework.stereotype.Component;
 public final class As2Configuration {
 
   /** Default AS2 server identifier. */
-  private String id = "AS2-SERVER-001";
+  private final String ID = "AS2-SERVER-001";
 
   /** Server hostname or IP. */
-  private String host = "localhost";
+  private final String HOST = "localhost";
 
   /** Server port number (must be >= 1024). */
-  private int port = DEFAULT_PORT;
+  private final int PORT = DEFAULT_PORT;
 
   /** URL path for inbound AS2 messages. */
-  private String path = "/as2/inbound";
+  private final String PATH = "/as2/inbound";
 
   /** Default trading partner ID. */
-  private String partnerId = "TRADING-PARTNER-001";
+  private final String PARTNER_ID = "TRADING-PARTNER-001";
 
   /** Default AS2 server port. */
   private static final int DEFAULT_PORT = 9090;
