@@ -1,6 +1,17 @@
 spring:
   application:
     name: edi_carrier_integration_service
+  cloud:
+    vault:
+      host: ${VAULT_HOST:localhost}
+      port: ${VAULT_PORT:8200}
+      scheme: ${VAULT_SCHEME:http}
+      authentication: ${VAULT_AUTH_METHOD:TOKEN}
+      token: ${VAULT_TOKEN:root}
+      kv:
+        enabled: true
+        backend: secret
+        default-context: edi-carrier-service
   main:
     banner-mode: off
 
@@ -18,12 +29,12 @@ edi:
       bucket: ${MINIO_BUCKET:edi-archive}
   security:
     keystore:
-      path: ${KEYSTORE_PATH:/etc/secrets/keystore.p12}
-      password: ${KEYSTORE_PASSWORD:keystorepassword}
+      path: ${KEYSTORE_PATH:${vault.secret.keystore-path:/etc/secrets/keystore.p12}}
+      password: ${KEYSTORE_PASSWORD:${vault.secret.keystore-password:keystorepassword}}
       type: ${KEYSTORE_TYPE:PKCS12}
     truststore:
-      path: ${TRUSTSTORE_PATH:/etc/secrets/truststore.p12}
-      password: ${TRUSTSTORE_PASSWORD:truststorepassword}
+      path: ${TRUSTSTORE_PATH:${vault.secret.truststore-path:/etc/secrets/truststore.p12}}
+      password: ${TRUSTSTORE_PASSWORD:${vault.secret.truststore-password:truststorepassword}}
       type: ${TRUSTSTORE_TYPE:PKCS12}
 
 logging:

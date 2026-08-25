@@ -4,6 +4,7 @@ import com.innowise.edi_carrier_integration_service.edi.domain.exception.EdiSecu
 import jakarta.mail.internet.MimeBodyPart;
 import jakarta.mail.internet.MimeMultipart;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.security.PrivateKey;
 import java.security.cert.CertPathBuilder;
@@ -35,6 +36,7 @@ import org.bouncycastle.mail.smime.SMIMEEnveloped;
 import org.bouncycastle.mail.smime.SMIMESigned;
 import org.bouncycastle.mail.smime.SMIMEUtil;
 import org.bouncycastle.util.Store;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -43,6 +45,9 @@ import org.springframework.stereotype.Service;
 public class SMimeSecurityService {
 
   private final KeyManagementService keyManagementService;
+
+  @Value("${edi.pipeline.max-payload-bytes:20971520}")
+  private long maxAllowedPayloadBytes;
 
   public byte[] decryptAndVerify(
       byte[] smimeMessageBytes, String recipientAlias, String senderAlias) {
@@ -139,8 +144,20 @@ public class SMimeSecurityService {
       }
 
       MimeBodyPart contentPart = (MimeBodyPart) multipart.getBodyPart(0);
-      try (InputStream contentStream = contentPart.getInputStream()) {
-        return contentStream.readAllBytes();
+      try (InputStream contentStream = contentPart.getInputStream();
+          ByteArrayOutputStream buffer = new ByteArrayOutputStream()) {
+        byte[] chunk = new byte[8192];
+        int bytesRead;
+        long totalBytes = 0;
+        while ((bytesRead = contentStream.read(chunk, 0, chunk.length)) != -1) {
+          totalBytes += bytesRead;
+          if (totalBytes > maxAllowedPayloadBytes) {
+            throw new EdiSecurityException(
+                "Extracted payload size exceeds limit: " + maxAllowedPayloadBytes + " bytes");
+          }
+          buffer.write(chunk, 0, bytesRead);
+        }
+        return buffer.toByteArray();
       }
     } catch (EdiSecurityException e) {
       throw e;

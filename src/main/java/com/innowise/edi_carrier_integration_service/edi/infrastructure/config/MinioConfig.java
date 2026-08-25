@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class MinioConfig {
 
-  @Value("${edi.archive.minio.url:http://localhost:9000}")
+  @Value("${edi.archive.minio.endpoint:http://localhost:9000}")
   private String url;
 
   @Value("${edi.archive.minio.access-key:minioadmin}")

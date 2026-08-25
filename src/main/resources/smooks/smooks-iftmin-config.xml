@@ -13,10 +13,25 @@
              createOnElement="IFTMIN">
         <jb:value property="controlNumber" data="IFTMIN/BGM/C106/e1004"/>
         <jb:value property="documentType" data="IFTMIN/BGM/C002/e1001"/>
+    </jb:bean>
+
+    <jb:bean class="com.innowise.edi_carrier_integration_service.edi.domain.model.IftminInstructionDto"
+             beanId="consignorBean"
+             createOnElement="IFTMIN/NAD[e3035='CZ']">
         <jb:value property="consignorName" data="IFTMIN/NAD[e3035='CZ']/C080/e3036"/>
         <jb:value property="consignorAddress" data="IFTMIN/NAD[e3035='CZ']/C059/e3042"/>
+    </jb:bean>
+
+    <jb:bean class="com.innowise.edi_carrier_integration_service.edi.domain.model.IftminInstructionDto"
+             beanId="consigneeBean"
+             createOnElement="IFTMIN/NAD[e3035='CN']">
         <jb:value property="consigneeName" data="IFTMIN/NAD[e3035='CN']/C080/e3036"/>
         <jb:value property="consigneeAddress" data="IFTMIN/NAD[e3035='CN']/C059/e3042"/>
+    </jb:bean>
+
+    <jb:bean class="com.innowise.edi_carrier_integration_service.edi.domain.model.IftminInstructionDto"
+             beanId="carrierBean"
+             createOnElement="IFTMIN/NAD[e3035='CA']">
         <jb:value property="carrierName" data="IFTMIN/NAD[e3035='CA']/C080/e3036"/>
     </jb:bean>
 
