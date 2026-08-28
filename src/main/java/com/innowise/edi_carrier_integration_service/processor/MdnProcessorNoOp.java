@@ -7,24 +7,25 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
 /**
- * Processor that logs the incoming AS2 message body. Currently, a stub; full MDN generation will be
- * implemented later.
+ * Processor that logs the incoming AS2 message body. Currently, a stub; full
+ * MDN generation will be implemented later.
  */
 @Slf4j
 @Component
 @Primary
 public final class MdnProcessorNoOp implements Processor {
 
-  /**
-   * Processes the incoming exchange by logging the message body.
-   *
-   * @param exchange the Camel exchange containing the message
-   */
-  @Override
-  public void process(final Exchange exchange) {
-    final String body = exchange.getMessage().getBody(String.class);
+    /**
+     * Processes the incoming exchange by logging the message body.
+     *
+     * @param exchange
+     *            the Camel exchange containing the message
+     */
+    @Override
+    public void process(final Exchange exchange) {
+        final String body = exchange.getMessage().getBody(String.class);
 
-    log.info("AS2 message received");
-    log.info("EDI body:\n{}", body);
-  }
+        log.info("AS2 message received");
+        log.info("EDI body:\n{}", body);
+    }
 }

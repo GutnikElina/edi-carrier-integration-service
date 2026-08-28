@@ -19,58 +19,58 @@ import org.springframework.boot.test.context.SpringBootTest;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class CamelAs2ServerApplicationTests {
 
-  @Autowired private CamelContext camelContext;
+    @Autowired
+    private CamelContext camelContext;
 
-  @EndpointInject("direct:as2-test")
-  private ProducerTemplate producerTemplate;
+    @EndpointInject("direct:as2-test")
+    private ProducerTemplate producerTemplate;
 
-  @EndpointInject("mock:result")
-  private MockEndpoint mockResult;
+    @EndpointInject("mock:result")
+    private MockEndpoint mockResult;
 
-  @BeforeAll
-  void setUp() throws Exception {
-    AdviceWith.adviceWith(
-        camelContext,
-        "as2-inbound-route",
-        route -> {
-          route.replaceFromWith("direct:as2-test");
-          route.weaveAddLast().to("mock:result");
-        });
-    camelContext.start();
-  }
+    @BeforeAll
+    void setUp() throws Exception {
+        AdviceWith.adviceWith(
+                camelContext,
+                "as2-inbound-route",
+                route -> {
+                    route.replaceFromWith("direct:as2-test");
+                    route.weaveAddLast().to("mock:result");
+                });
+        camelContext.start();
+    }
 
-  @BeforeEach
-  void resetMocks() {
-    mockResult.reset();
-  }
+    @BeforeEach
+    void resetMocks() {
+        mockResult.reset();
+    }
 
-  @Test
-  void shouldReceiveEdiMessage() throws Exception {
-    final String edi =
-        """
-            ISA*00*          *00*          *ZZ*SENDER         *ZZ*RECEIVER       *260821*1000*U*00401*000000001*0*P*>~
-            GS*PO*SENDER*RECEIVER*20260821*1000*1*X*004010~
-            ST*850*0001~
-            SE*2*0001~
-            GE*1*1~
-            IEA*1*000000001~
-            """;
+    @Test
+    void shouldReceiveEdiMessage() throws Exception {
+        final String edi = """
+                ISA*00*          *00*          *ZZ*SENDER         *ZZ*RECEIVER       *260821*1000*U*00401*000000001*0*P*>~
+                GS*PO*SENDER*RECEIVER*20260821*1000*1*X*004010~
+                ST*850*0001~
+                SE*2*0001~
+                GE*1*1~
+                IEA*1*000000001~
+                """;
 
-    mockResult.expectedMessageCount(1);
-    mockResult.expectedBodiesReceived(edi);
+        mockResult.expectedMessageCount(1);
+        mockResult.expectedBodiesReceived(edi);
 
-    producerTemplate.sendBody("direct:as2-test", edi);
+        producerTemplate.sendBody("direct:as2-test", edi);
 
-    mockResult.assertIsSatisfied();
-  }
+        mockResult.assertIsSatisfied();
+    }
 
-  @Test
-  void shouldProcessEmptyBody() throws Exception {
-    mockResult.expectedMessageCount(1);
-    mockResult.expectedBodiesReceived("");
+    @Test
+    void shouldProcessEmptyBody() throws Exception {
+        mockResult.expectedMessageCount(1);
+        mockResult.expectedBodiesReceived("");
 
-    producerTemplate.sendBody("direct:as2-test", "");
+        producerTemplate.sendBody("direct:as2-test", "");
 
-    mockResult.assertIsSatisfied();
-  }
+        mockResult.assertIsSatisfied();
+    }
 }
