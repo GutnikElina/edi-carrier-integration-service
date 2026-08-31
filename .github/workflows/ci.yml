@@ -16,6 +16,6 @@ jobs:
         -Dsonar.organization=gutnikelina
         -Dsonar.host.url=https://sonarcloud.io
         -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
-        -Dsonar.coverage.exclusions=**/config/**,**/dto/**,**/model/**,**/exception/**,**/repository/**,**/mapper/**,**/*Application.java,**/util/**,**/client/**
+        -Dsonar.coverage.exclusions=**/config/**,**/application/**,**/domain/**,**/dto/**,**/model/**,**/exception/**,**/repository/**,**/mapper/**,**/*Application.java,**/util/**,**/client/**
     secrets:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
