@@ -75,7 +75,7 @@
 			<version>2.0.8</version>
 		</dependency>
 
-		<!-- Utilities & Tooling -->
+		<!-- Tooling -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-configuration-processor</artifactId>
@@ -128,14 +128,12 @@
 			<version>${smooks.version}</version>
 		</dependency>
 
-		<!-- Smooks EDI Cartridge -->
+		<!-- Smooks Cartridges -->
 		<dependency>
 			<groupId>org.smooks.cartridges.edi</groupId>
 			<artifactId>smooks-edi-cartridge</artifactId>
 			<version>${smooks.version}</version>
 		</dependency>
-
-		<!-- Smooks JavaBean Cartridge -->
 		<dependency>
 			<groupId>org.smooks.cartridges</groupId>
 			<artifactId>smooks-javabean-cartridge</artifactId>
@@ -228,42 +226,6 @@
 								<argument>core.hooksPath</argument>
 								<argument>.githooks</argument>
 							</arguments>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>default-compile</id>
-						<phase>compile</phase>
-						<goals>
-							<goal>compile</goal>
-						</goals>
-						<configuration>
-							<annotationProcessorPaths>
-								<path>
-									<groupId>org.projectlombok</groupId>
-									<artifactId>lombok</artifactId>
-								</path>
-							</annotationProcessorPaths>
-						</configuration>
-					</execution>
-					<execution>
-						<id>default-testCompile</id>
-						<phase>test-compile</phase>
-						<goals>
-							<goal>testCompile</goal>
-						</goals>
-						<configuration>
-							<annotationProcessorPaths>
-								<path>
-									<groupId>org.projectlombok</groupId>
-									<artifactId>lombok</artifactId>
-								</path>
-							</annotationProcessorPaths>
 						</configuration>
 					</execution>
 				</executions>
