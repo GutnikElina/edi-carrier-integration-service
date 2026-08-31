@@ -16,6 +16,6 @@ jobs:
         -Dsonar.organization=gutnikelina
         -Dsonar.host.url=https://sonarcloud.io
         -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
-        -Dsonar.coverage.exclusions=**/config/**,**/application/**,**/domain/**,**/dto/**,**/model/**,**/exception/**,**/repository/**,**/mapper/**,**/*Application.java,**/util/**,**/client/**
+        '-Dsonar.exclusions=**/com/innowise/edi_carrier_integration_service/config/**/*,**/infrastructure/config/**/*,**/application/**/*,**/domain/**/*,**/processor/**/*,**/routes/**/*,**/*Application.java'
     secrets:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
