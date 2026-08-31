@@ -37,8 +37,24 @@ edi:
       password: ${TRUSTSTORE_PASSWORD:${vault.secret.truststore-password:truststorepassword}}
       type: ${TRUSTSTORE_TYPE:PKCS12}
 
+camel:
+  main:
+    name: CamelAS2Server
+  springboot:
+    main-run-controller: true
+
+as2:
+  server:
+    id: AS2-SERVER-001
+    host: localhost
+    port: 9090
+    path: /as2/inbound
+    partner-id: TRADING-PARTNER-001
+
 logging:
   level:
     com.innowise.edi_carrier_integration_service: ${LOGGING_LEVEL_APP:INFO}
     org.smooks: ${LOGGING_LEVEL_SMOOKS:WARN}
     org.bouncycastle: ${LOGGING_LEVEL_BC:WARN}
+    org.apache.camel: INFO
+    com.example.as2: DEBUG

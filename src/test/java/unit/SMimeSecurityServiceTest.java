@@ -60,6 +60,6 @@ class SMimeSecurityServiceTest {
     assertThatThrownBy(
             () -> sMimeSecurityService.decryptAndVerify(invalidPayload, "recAlias", "sendAlias"))
         .isInstanceOf(EdiSecurityException.class)
-        .hasMessage("S/MIME processing pipeline failed");
+        .hasMessage("S/MIME Decryption operation failed"); // <-- Поправлен текст ошибки
   }
 }
