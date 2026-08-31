@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<profiles version="12">
+    <profile kind="CodeFormatterProfile" name="InnoCodeFormatterProfile" version="12">
+        <setting id="org.eclipse.jdt.core.formatter.tabulation.char" value="space"/>
+        <setting id="org.eclipse.jdt.core.formatter.tabulation.size" value="4"/>
+        <setting id="org.eclipse.jdt.core.formatter.indentation.size" value="4"/>
+        <setting id="org.eclipse.jdt.core.formatter.continuation_indentation" value="2"/>
+        <setting id="org.eclipse.jdt.core.compiler.source" value="17"/>
+        <setting id="org.eclipse.jdt.core.compiler.compliance" value="17"/>
+        <setting id="org.eclipse.jdt.core.formatter.lineSplit" value="100"/>
+        <setting id="org.eclipse.jdt.core.formatter.join_wrapped_lines" value="false"/>
+        <setting id="org.eclipse.jdt.core.formatter.alignment_for_selector_in_method_invocation" value="20"/>
+        <setting id="org.eclipse.jdt.core.formatter.insert_new_line_after_annotation_on_field" value="insert"/>
+        <setting id="org.eclipse.jdt.core.formatter.insert_new_line_after_annotation_on_method" value="insert"/>
+        <setting id="org.eclipse.jdt.core.formatter.insert_new_line_after_annotation_on_type" value="insert"/>
+        <setting id="org.eclipse.jdt.core.formatter.brace_position_for_type_declaration" value="end_of_line"/>
+        <setting id="org.eclipse.jdt.core.formatter.brace_position_for_method_declaration" value="end_of_line"/>
+        <setting id="org.eclipse.jdt.core.formatter.brace_position_for_block" value="end_of_line"/>
+    </profile>
+</profiles>

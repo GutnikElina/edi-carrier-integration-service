@@ -28,28 +28,28 @@ class CamelAs2ServerApplicationTests {
 
   @Autowired private CamelContext camelContext;
 
-  @EndpointInject("direct:as2-test")
-  private ProducerTemplate producerTemplate;
+    @EndpointInject("direct:as2-test")
+    private ProducerTemplate producerTemplate;
 
-  @EndpointInject("mock:result")
-  private MockEndpoint mockResult;
+    @EndpointInject("mock:result")
+    private MockEndpoint mockResult;
 
-  @BeforeAll
-  void setUp() throws Exception {
-    AdviceWith.adviceWith(
-        camelContext,
-        "as2-inbound-route",
-        route -> {
-          route.replaceFromWith("direct:as2-test");
-          route.weaveAddLast().to("mock:result");
-        });
-    camelContext.start();
-  }
+    @BeforeAll
+    void setUp() throws Exception {
+        AdviceWith.adviceWith(
+                camelContext,
+                "as2-inbound-route",
+                route -> {
+                    route.replaceFromWith("direct:as2-test");
+                    route.weaveAddLast().to("mock:result");
+                });
+        camelContext.start();
+    }
 
-  @BeforeEach
-  void resetMocks() {
-    mockResult.reset();
-  }
+    @BeforeEach
+    void resetMocks() {
+        mockResult.reset();
+    }
 
   @Test
   void shouldReceiveEdiMessage() throws Exception {
@@ -63,21 +63,21 @@ class CamelAs2ServerApplicationTests {
                 IEA*1*000000001~
                 """;
 
-    mockResult.expectedMessageCount(1);
-    mockResult.expectedBodiesReceived(edi);
+        mockResult.expectedMessageCount(1);
+        mockResult.expectedBodiesReceived(edi);
 
-    producerTemplate.sendBody("direct:as2-test", edi);
+        producerTemplate.sendBody("direct:as2-test", edi);
 
-    mockResult.assertIsSatisfied();
-  }
+        mockResult.assertIsSatisfied();
+    }
 
-  @Test
-  void shouldProcessEmptyBody() throws Exception {
-    mockResult.expectedMessageCount(1);
-    mockResult.expectedBodiesReceived("");
+    @Test
+    void shouldProcessEmptyBody() throws Exception {
+        mockResult.expectedMessageCount(1);
+        mockResult.expectedBodiesReceived("");
 
-    producerTemplate.sendBody("direct:as2-test", "");
+        producerTemplate.sendBody("direct:as2-test", "");
 
-    mockResult.assertIsSatisfied();
-  }
+        mockResult.assertIsSatisfied();
+    }
 }
