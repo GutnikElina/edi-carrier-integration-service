@@ -15,37 +15,55 @@ class As2MdnGeneratorTest {
   private final As2MdnGenerator generator = new As2MdnGenerator();
 
   @BeforeAll
-  static void setupSecurity() {
+  static void init() {
     if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
       Security.addProvider(new BouncyCastleProvider());
     }
   }
 
   @Test
-  @DisplayName("Should generate valid AS2 MDN string with mandatory headers")
+  @DisplayName("generateMdn: success")
   void generateMdn_success() {
-    byte[] payload = "UNB+UNOA:1+SENDER+RECEIVER+201026:1022+1'".getBytes();
-    String msgId = "<MSG-12345@carrier.com>";
-    String senderAs2 = "CARRIER_AS2";
-    String receiverAs2 = "MY_COMPANY_AS2";
-
-    String mdn = generator.generateMdn(payload, msgId, senderAs2, receiverAs2);
-
+    byte[] payload = "test".getBytes();
+    String mdn = generator.generateMdn(payload, "<msg>", "SENDER", "RECEIVER");
     assertThat(mdn)
-        .isNotNull()
         .contains("AS2-Version: 1.2")
-        .contains("From: MY_COMPANY_AS2")
-        .contains("To: CARRIER_AS2")
-        .contains("Original-Message-ID: " + msgId)
-        .contains("Disposition: automatic-action/MDN-sent-automatically; processed")
+        .contains("From: RECEIVER")
+        .contains("To: SENDER")
+        .contains("Original-Message-ID: <msg>")
+        .contains("Received-Content-MIC:")
         .contains("sha-256");
   }
 
   @Test
-  @DisplayName("Should throw NullPointerException when payload is null")
-  void generateMdn_nullPayload_throwsNpe() {
-    assertThatThrownBy(() -> generator.generateMdn(null, "id", "sender", "receiver"))
+  @DisplayName("generateMdn: NPE on null payload")
+  void generateMdn_nullPayload() {
+    assertThatThrownBy(() -> generator.generateMdn(null, "id", "s", "r"))
         .isInstanceOf(NullPointerException.class)
         .hasMessageContaining("Original payload byte array must not be null");
+  }
+
+  @Test
+  @DisplayName("generateMdn: NPE on null messageId")
+  void generateMdn_nullMessageId() {
+    assertThatThrownBy(() -> generator.generateMdn(new byte[1], null, "s", "r"))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessageContaining("Original Message-ID must not be null");
+  }
+
+  @Test
+  @DisplayName("generateMdn: NPE on null senderAs2Id")
+  void generateMdn_nullSender() {
+    assertThatThrownBy(() -> generator.generateMdn(new byte[1], "id", null, "r"))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessageContaining("Sender AS2 ID must not be null");
+  }
+
+  @Test
+  @DisplayName("generateMdn: NPE on null receiverAs2Id")
+  void generateMdn_nullReceiver() {
+    assertThatThrownBy(() -> generator.generateMdn(new byte[1], "id", "s", null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessageContaining("Receiver AS2 ID must not be null");
   }
 }

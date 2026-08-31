@@ -3,8 +3,7 @@ package unit;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import com.innowise.edi_carrier_integration_service.edi.domain.exception.EdiParseException;
 import com.innowise.edi_carrier_integration_service.edi.domain.model.IftminInstructionDto;
@@ -23,39 +22,83 @@ import org.smooks.io.source.ByteSource;
 @ExtendWith(MockitoExtension.class)
 class EdiParserServiceTest {
 
-  @Mock private Smooks smooksIftminEngine;
-
-  @Mock private ExecutionContext executionContext;
-
-  @InjectMocks private EdiParserService ediParserService;
+  @Mock private Smooks smooks;
+  @Mock private ExecutionContext ctx;
+  @InjectMocks private EdiParserService parser;
 
   @Test
-  @DisplayName("Should parse EDIFACT payload successfully")
-  void parseIftmin_success() {
-    byte[] payload = "EDIFACT_DATA".getBytes();
-    IftminInstructionDto expectedDto = new IftminInstructionDto();
-
-    when(smooksIftminEngine.createExecutionContext()).thenReturn(executionContext);
+  @DisplayName("parseIftmin: success")
+  void parseIftmin_success() throws Exception {
+    byte[] payload = "EDIFACT".getBytes();
+    IftminInstructionDto expected = new IftminInstructionDto();
+    when(smooks.createExecutionContext()).thenReturn(ctx);
 
     doAnswer(
-            invocation -> {
-              JavaSink javaSink = invocation.getArgument(2);
-              javaSink.getResultMap().put("iftminDto", expectedDto);
+            inv -> {
+              JavaSink sink = inv.getArgument(2);
+              sink.getResultMap().put("iftminDto", expected);
               return null;
             })
-        .when(smooksIftminEngine)
-        .filterSource(any(ExecutionContext.class), any(ByteSource.class), any(JavaSink.class));
+        .when(smooks)
+        .filterSource(any(), any(ByteSource.class), any(JavaSink.class));
 
-    IftminInstructionDto result = ediParserService.parseIftmin(payload);
-
-    assertThat(result).isNotNull().isEqualTo(expectedDto);
+    IftminInstructionDto result = parser.parseIftmin(payload);
+    assertThat(result).isSameAs(expected);
   }
 
   @Test
-  @DisplayName("Should throw EdiParseException when payload is empty")
-  void parseIftmin_emptyPayload_throwsException() {
-    assertThatThrownBy(() -> ediParserService.parseIftmin(new byte[0]))
+  @DisplayName("parseIftmin: throws NPE on null payload")
+  void parseIftmin_nullPayload() {
+    assertThatThrownBy(() -> parser.parseIftmin(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessageContaining("EDIFACT payload byte array must not be null");
+  }
+
+  @Test
+  @DisplayName("parseIftmin: throws EdiParseException on empty payload")
+  void parseIftmin_emptyPayload() {
+    assertThatThrownBy(() -> parser.parseIftmin(new byte[0]))
         .isInstanceOf(EdiParseException.class)
         .hasMessage("EDIFACT payload byte array is empty");
+  }
+
+  @Test
+  @DisplayName("parseIftmin: throws EdiParseException when Smooks fails")
+  void parseIftmin_smooksException() throws Exception {
+    when(smooks.createExecutionContext()).thenReturn(ctx);
+    doThrow(new RuntimeException("smooks error")).when(smooks).filterSource(any(), any(), any());
+
+    assertThatThrownBy(() -> parser.parseIftmin("data".getBytes()))
+        .isInstanceOf(EdiParseException.class)
+        .hasMessageContaining("Unhandled error occurred");
+  }
+
+  @Test
+  @DisplayName("parseIftmin: throws EdiParseException when DTO is null")
+  void parseIftmin_dtoNull() throws Exception {
+    when(smooks.createExecutionContext()).thenReturn(ctx);
+    doAnswer(
+            inv -> {
+              JavaSink sink = inv.getArgument(2);
+              sink.getResultMap().put("iftminDto", null);
+              return null;
+            })
+        .when(smooks)
+        .filterSource(any(), any(), any());
+
+    assertThatThrownBy(() -> parser.parseIftmin("data".getBytes()))
+        .isInstanceOf(EdiParseException.class)
+        .hasMessageContaining("null Java Bean binding");
+  }
+
+  @Test
+  @DisplayName("parseIftmin: rethrows EdiParseException (catch block)")
+  void parseIftmin_rethrowsEdiParseException() throws Exception {
+    when(smooks.createExecutionContext()).thenReturn(ctx);
+    doThrow(new EdiParseException("inner")).when(smooks).filterSource(any(), any(), any());
+
+    assertThatThrownBy(() -> parser.parseIftmin("data".getBytes()))
+        .isInstanceOf(EdiParseException.class)
+        .hasMessage("inner");
   }
 }
