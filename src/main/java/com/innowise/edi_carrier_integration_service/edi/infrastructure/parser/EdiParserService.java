@@ -40,6 +40,7 @@ public class EdiParserService {
           "Successfully parsed EDIFACT IFTMIN payload, controlNumber: {}", dto.getControlNumber());
       return dto;
     } catch (EdiParseException e) {
+      log.error("EdiParseException caused during parsing");
       throw e;
     } catch (Exception e) {
       throw new EdiParseException(
