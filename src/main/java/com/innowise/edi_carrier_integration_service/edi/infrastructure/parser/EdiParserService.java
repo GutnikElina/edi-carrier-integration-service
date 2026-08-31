@@ -16,35 +16,37 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class EdiParserService {
 
-  private final Smooks smooksIftminEngine;
+    private final Smooks smooksIftminEngine;
 
-  public IftminInstructionDto parseIftmin(byte[] edifactPayload) {
-    Objects.requireNonNull(edifactPayload, "EDIFACT payload byte array must not be null");
-    if (edifactPayload.length == 0) {
-      throw new EdiParseException("EDIFACT payload byte array is empty");
+    public IftminInstructionDto parseIftmin(byte[] edifactPayload) {
+        Objects.requireNonNull(edifactPayload, "EDIFACT payload byte array must not be null");
+        if (edifactPayload.length == 0) {
+            throw new EdiParseException("EDIFACT payload byte array is empty");
+        }
+
+        try {
+            ExecutionContext executionContext = smooksIftminEngine.createExecutionContext();
+            JavaSink javaSink = new JavaSink();
+
+            smooksIftminEngine.filterSource(executionContext, new ByteSource(edifactPayload),
+                    javaSink);
+
+            IftminInstructionDto dto = (IftminInstructionDto) javaSink.getBean("iftminDto");
+            if (dto == null) {
+                throw new EdiParseException(
+                        "Smooks parsing executed successfully but produced null Java Bean binding");
+            }
+
+            log.info(
+                    "Successfully parsed EDIFACT IFTMIN payload, controlNumber: {}",
+                    dto.getControlNumber());
+            return dto;
+        } catch (EdiParseException e) {
+            log.error("EdiParseException caused during parsing");
+            throw e;
+        } catch (Exception e) {
+            throw new EdiParseException(
+                    "Unhandled error occurred during Smooks EDIFACT IFTMIN parsing", e);
+        }
     }
-
-    try {
-      ExecutionContext executionContext = smooksIftminEngine.createExecutionContext();
-      JavaSink javaSink = new JavaSink();
-
-      smooksIftminEngine.filterSource(executionContext, new ByteSource(edifactPayload), javaSink);
-
-      IftminInstructionDto dto = (IftminInstructionDto) javaSink.getBean("iftminDto");
-      if (dto == null) {
-        throw new EdiParseException(
-            "Smooks parsing executed successfully but produced null Java Bean binding");
-      }
-
-      log.info(
-          "Successfully parsed EDIFACT IFTMIN payload, controlNumber: {}", dto.getControlNumber());
-      return dto;
-    } catch (EdiParseException e) {
-      log.error("EdiParseException caused during parsing");
-      throw e;
-    } catch (Exception e) {
-      throw new EdiParseException(
-          "Unhandled error occurred during Smooks EDIFACT IFTMIN parsing", e);
-    }
-  }
 }

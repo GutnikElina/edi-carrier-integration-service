@@ -22,11 +22,15 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class CamelAs2ServerApplicationTests {
 
-  @MockBean private KeyManagementService keyManagementService;
-  @MockBean private EdiArchiveService ediArchiveService;
-  @MockBean private MinioClient minioClient;
+    @MockBean
+    private KeyManagementService keyManagementService;
+    @MockBean
+    private EdiArchiveService ediArchiveService;
+    @MockBean
+    private MinioClient minioClient;
 
-  @Autowired private CamelContext camelContext;
+    @Autowired
+    private CamelContext camelContext;
 
     @EndpointInject("direct:as2-test")
     private ProducerTemplate producerTemplate;
@@ -51,10 +55,9 @@ class CamelAs2ServerApplicationTests {
         mockResult.reset();
     }
 
-  @Test
-  void shouldReceiveEdiMessage() throws Exception {
-    final String edi =
-        """
+    @Test
+    void shouldReceiveEdiMessage() throws Exception {
+        final String edi = """
                 ISA*00*          *00*          *ZZ*SENDER         *ZZ*RECEIVER       *260821*1000*U*00401*000000001*0*P*>~
                 GS*PO*SENDER*RECEIVER*20260821*1000*1*X*004010~
                 ST*850*0001~

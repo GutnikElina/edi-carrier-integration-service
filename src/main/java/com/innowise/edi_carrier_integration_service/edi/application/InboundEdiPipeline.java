@@ -20,64 +20,64 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class InboundEdiPipeline {
 
-  @Value("${edi.pipeline.max-payload-bytes:20971520}")
-  private long maxAllowedPayloadBytes;
+    @Value("${edi.pipeline.max-payload-bytes:20971520}")
+    private long maxAllowedPayloadBytes;
 
-  private final SMimeSecurityService sMimeSecurityService;
-  private final EdiParserService ediParserService;
-  private final EdiArchiveService ediArchiveService;
-  private final As2MdnGenerator as2MdnGenerator;
+    private final SMimeSecurityService sMimeSecurityService;
+    private final EdiParserService ediParserService;
+    private final EdiArchiveService ediArchiveService;
+    private final As2MdnGenerator as2MdnGenerator;
 
-  public record InboundEdiResult(
-      IftminInstructionDto payloadDto, String mdnContent, String s3RawObjectPath) {}
-
-  @Async("ediAsyncTaskExecutor")
-  public CompletableFuture<InboundEdiResult> processInboundSmimeMessage(
-      byte[] rawSmimeBytes,
-      String originalMessageId,
-      String recipientAlias,
-      String senderAlias,
-      String senderAs2Id,
-      String receiverAs2Id) {
-
-    Objects.requireNonNull(rawSmimeBytes, "Raw S/MIME bytes array must not be null");
-    Objects.requireNonNull(originalMessageId, "Original Message-ID must not be null");
-    Objects.requireNonNull(recipientAlias, "Recipient KeyStore alias must not be null");
-    Objects.requireNonNull(senderAlias, "Sender TrustStore alias must not be null");
-    Objects.requireNonNull(senderAs2Id, "Sender AS2 ID must not be null");
-    Objects.requireNonNull(receiverAs2Id, "Receiver AS2 ID must not be null");
-
-    if (rawSmimeBytes.length > maxAllowedPayloadBytes) {
-      throw new PayloadTooLargeException(
-          "Payload size "
-              + rawSmimeBytes.length
-              + " bytes exceeds maximum allowed limit of "
-              + maxAllowedPayloadBytes
-              + " bytes");
+    public record InboundEdiResult(
+            IftminInstructionDto payloadDto, String mdnContent, String s3RawObjectPath) {
     }
 
-    String objectKey = "raw/" + UUID.randomUUID() + ".smime";
-    log.info(
-        "Starting pipeline execution for MessageID: {}. Assigned S3 Key: {}",
-        originalMessageId,
-        objectKey);
+    @Async("ediAsyncTaskExecutor")
+    public CompletableFuture<InboundEdiResult> processInboundSmimeMessage(
+            byte[] rawSmimeBytes,
+            String originalMessageId,
+            String recipientAlias,
+            String senderAlias,
+            String senderAs2Id,
+            String receiverAs2Id) {
 
-    String s3Path =
-        ediArchiveService.storeRawPayload(objectKey, rawSmimeBytes, "application/pkcs7-mime");
+        Objects.requireNonNull(rawSmimeBytes, "Raw S/MIME bytes array must not be null");
+        Objects.requireNonNull(originalMessageId, "Original Message-ID must not be null");
+        Objects.requireNonNull(recipientAlias, "Recipient KeyStore alias must not be null");
+        Objects.requireNonNull(senderAlias, "Sender TrustStore alias must not be null");
+        Objects.requireNonNull(senderAs2Id, "Sender AS2 ID must not be null");
+        Objects.requireNonNull(receiverAs2Id, "Receiver AS2 ID must not be null");
 
-    byte[] decryptedEdifactPayload =
-        sMimeSecurityService.decryptAndVerify(rawSmimeBytes, recipientAlias, senderAlias);
+        if (rawSmimeBytes.length > maxAllowedPayloadBytes) {
+            throw new PayloadTooLargeException(
+                    "Payload size "
+                            + rawSmimeBytes.length
+                            + " bytes exceeds maximum allowed limit of "
+                            + maxAllowedPayloadBytes
+                            + " bytes");
+        }
 
-    IftminInstructionDto instructionDto = ediParserService.parseIftmin(decryptedEdifactPayload);
-    log.info(
-        "Pipeline decrypted and parsed IFTMIN document. ControlNumber: {}, MessageID: {}",
-        instructionDto.getControlNumber(),
-        originalMessageId);
+        String objectKey = "raw/" + UUID.randomUUID() + ".smime";
+        log.info(
+                "Starting pipeline execution for MessageID: {}. Assigned S3 Key: {}",
+                originalMessageId,
+                objectKey);
 
-    String mdn =
-        as2MdnGenerator.generateMdn(
-            decryptedEdifactPayload, originalMessageId, senderAs2Id, receiverAs2Id);
+        String s3Path = ediArchiveService.storeRawPayload(objectKey, rawSmimeBytes,
+                "application/pkcs7-mime");
 
-    return CompletableFuture.completedFuture(new InboundEdiResult(instructionDto, mdn, s3Path));
-  }
+        byte[] decryptedEdifactPayload = sMimeSecurityService.decryptAndVerify(rawSmimeBytes,
+                recipientAlias, senderAlias);
+
+        IftminInstructionDto instructionDto = ediParserService.parseIftmin(decryptedEdifactPayload);
+        log.info(
+                "Pipeline decrypted and parsed IFTMIN document. ControlNumber: {}, MessageID: {}",
+                instructionDto.getControlNumber(),
+                originalMessageId);
+
+        String mdn = as2MdnGenerator.generateMdn(
+                decryptedEdifactPayload, originalMessageId, senderAs2Id, receiverAs2Id);
+
+        return CompletableFuture.completedFuture(new InboundEdiResult(instructionDto, mdn, s3Path));
+    }
 }

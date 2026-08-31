@@ -10,11 +10,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class IftminInstructionDto {
-  private String controlNumber;
-  private String documentType;
-  private String consignorName;
-  private String consignorAddress;
-  private String consigneeName;
-  private String consigneeAddress;
-  private String carrierName;
+    private String controlNumber;
+    private String documentType;
+    private String consignorName;
+    private String consignorAddress;
+    private String consigneeName;
+    private String consigneeAddress;
+    private String carrierName;
 }

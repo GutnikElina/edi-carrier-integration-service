@@ -8,17 +8,17 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class MinioConfig {
 
-  @Value("${edi.archive.minio.endpoint:http://localhost:9000}")
-  private String url;
+    @Value("${edi.archive.minio.endpoint:http://localhost:9000}")
+    private String url;
 
-  @Value("${edi.archive.minio.access-key:minioadmin}")
-  private String accessKey;
+    @Value("${edi.archive.minio.access-key:minioadmin}")
+    private String accessKey;
 
-  @Value("${edi.archive.minio.secret-key:minioadmin}")
-  private String secretKey;
+    @Value("${edi.archive.minio.secret-key:minioadmin}")
+    private String secretKey;
 
-  @Bean
-  public MinioClient minioClient() {
-    return MinioClient.builder().endpoint(url).credentials(accessKey, secretKey).build();
-  }
+    @Bean
+    public MinioClient minioClient() {
+        return MinioClient.builder().endpoint(url).credentials(accessKey, secretKey).build();
+    }
 }
