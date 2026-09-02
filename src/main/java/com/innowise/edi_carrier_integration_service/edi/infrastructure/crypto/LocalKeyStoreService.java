@@ -8,10 +8,7 @@ import java.nio.file.Paths;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
-import java.util.Arrays;
-import java.util.Enumeration;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -45,58 +42,74 @@ public class LocalKeyStoreService implements KeyManagementService {
 
   @PostConstruct
   public void init() {
-    try (InputStream ksStream = Files.newInputStream(Paths.get(keyStorePath))) {
-      KeyStore keyStore = KeyStore.getInstance(keyStoreType);
-      keyStore.load(ksStream, keyStorePassword);
+    loadStore(
+        keyStorePath,
+        keyStoreType,
+        keyStorePassword,
+        "KeyStore",
+        store -> {
+          processAliases(
+              store,
+              alias -> {
+                if (store.isKeyEntry(alias)) {
+                  Optional.ofNullable((PrivateKey) store.getKey(alias, keyStorePassword))
+                      .ifPresent(key -> privateKeyCache.put(alias, key));
+                }
+                Optional.ofNullable((X509Certificate) store.getCertificate(alias))
+                    .ifPresent(cert -> certificateCache.put(alias, cert));
+              });
+          log.info(
+              "KeyStore initialized successfully. Loaded {} private keys, {} certificates.",
+              privateKeyCache.size(),
+              certificateCache.size());
+        });
 
-      Enumeration<String> aliases = keyStore.aliases();
-      while (aliases.hasMoreElements()) {
-        String alias = aliases.nextElement();
-        if (keyStore.isKeyEntry(alias)) {
-          PrivateKey key = (PrivateKey) keyStore.getKey(alias, keyStorePassword);
-          if (key != null) {
-            privateKeyCache.put(alias, key);
-          }
-        }
-        X509Certificate cert = (X509Certificate) keyStore.getCertificate(alias);
-        if (cert != null) {
-          certificateCache.put(alias, cert);
-        }
-      }
-      log.info(
-          "KeyStore initialized successfully. Loaded {} private keys, {} certificates.",
-          privateKeyCache.size(),
-          certificateCache.size());
+    loadStore(
+        trustStorePath,
+        trustStoreType,
+        trustStorePassword,
+        "TrustStore",
+        store -> {
+          processAliases(
+              store,
+              alias ->
+                  Optional.ofNullable((X509Certificate) store.getCertificate(alias))
+                      .ifPresent(cert -> trustCertificateCache.put(alias, cert)));
+          log.info(
+              "TrustStore initialized successfully. Loaded {} trusted certificates.",
+              trustCertificateCache.size());
+        });
+  }
+
+  private void loadStore(
+      String path, String type, char[] password, String storeName, KeyStoreConsumer consumer) {
+    try (InputStream is = Files.newInputStream(Paths.get(path))) {
+      KeyStore store = KeyStore.getInstance(type);
+      store.load(is, password);
+      consumer.accept(store);
     } catch (Exception e) {
-      throw new EdiSecurityException("Failed to load KeyStore from path: " + keyStorePath, e);
+      throw new EdiSecurityException("Failed to load " + storeName + " from path: " + path, e);
     } finally {
-      if (keyStorePassword != null) {
-        Arrays.fill(keyStorePassword, '\0');
+      if (password != null) {
+        Arrays.fill(password, '\0');
       }
     }
+  }
 
-    try (InputStream tsStream = Files.newInputStream(Paths.get(trustStorePath))) {
-      KeyStore trustStore = KeyStore.getInstance(trustStoreType);
-      trustStore.load(tsStream, trustStorePassword);
-
-      Enumeration<String> aliases = trustStore.aliases();
-      while (aliases.hasMoreElements()) {
-        String alias = aliases.nextElement();
-        X509Certificate cert = (X509Certificate) trustStore.getCertificate(alias);
-        if (cert != null) {
-          trustCertificateCache.put(alias, cert);
-        }
-      }
-      log.info(
-          "TrustStore initialized successfully. Loaded {} trusted certificates.",
-          trustCertificateCache.size());
-    } catch (Exception e) {
-      throw new EdiSecurityException("Failed to load TrustStore from path: " + trustStorePath, e);
-    } finally {
-      if (trustStorePassword != null) {
-        Arrays.fill(trustStorePassword, '\0');
-      }
+  private void processAliases(KeyStore store, AliasConsumer consumer) throws Exception {
+    for (String alias : Collections.list(store.aliases())) {
+      consumer.accept(alias);
     }
+  }
+
+  @FunctionalInterface
+  private interface KeyStoreConsumer {
+    void accept(KeyStore store) throws Exception;
+  }
+
+  @FunctionalInterface
+  private interface AliasConsumer {
+    void accept(String alias) throws Exception;
   }
 
   @Override

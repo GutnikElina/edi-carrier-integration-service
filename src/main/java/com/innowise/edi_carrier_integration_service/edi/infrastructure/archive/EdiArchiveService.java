@@ -66,7 +66,7 @@ public class EdiArchiveService {
       log.info("Successfully stored non-repudiation document to S3: {}/{}", bucketName, objectName);
       return objectName;
     } catch (MinioException | IOException e) {
-      log.warn("S3 upload attempt failed for object: {}. Retrying...", objectName);
+      log.error("S3 upload attempt failed for object: {}. Retrying...", objectName);
       throw new EdiProcessingException(
           "S3 payload storage operation failed for object: " + objectName, e);
     } catch (Exception e) {

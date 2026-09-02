@@ -14,7 +14,7 @@ public class AsyncVirtualThreadConfig {
 
   @Bean(name = "ediAsyncTaskExecutor")
   public AsyncTaskExecutor taskExecutor() {
-    SimpleAsyncTaskExecutor executor = new SimpleAsyncTaskExecutor("edi-vt-");
+    var executor = new SimpleAsyncTaskExecutor("edi-vt-");
     executor.setVirtualThreads(true);
     return executor;
   }

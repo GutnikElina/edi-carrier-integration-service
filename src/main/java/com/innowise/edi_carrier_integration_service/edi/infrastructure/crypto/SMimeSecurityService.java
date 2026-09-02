@@ -4,9 +4,7 @@ import com.innowise.edi_carrier_integration_service.edi.domain.exception.EdiSecu
 import jakarta.mail.internet.MimeBodyPart;
 import jakarta.mail.internet.MimeMultipart;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-import java.security.PrivateKey;
 import java.security.cert.CertPathBuilder;
 import java.security.cert.CertStore;
 import java.security.cert.CollectionCertStoreParameters;
@@ -15,19 +13,12 @@ import java.security.cert.PKIXCertPathBuilderResult;
 import java.security.cert.TrustAnchor;
 import java.security.cert.X509CertSelector;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
-import org.bouncycastle.cms.RecipientId;
-import org.bouncycastle.cms.RecipientInformation;
-import org.bouncycastle.cms.RecipientInformationStore;
 import org.bouncycastle.cms.SignerInformation;
-import org.bouncycastle.cms.SignerInformationStore;
 import org.bouncycastle.cms.jcajce.JcaSimpleSignerInfoVerifierBuilder;
 import org.bouncycastle.cms.jcajce.JceKeyTransEnvelopedRecipient;
 import org.bouncycastle.cms.jcajce.JceKeyTransRecipientId;
@@ -59,8 +50,8 @@ public class SMimeSecurityService {
     Objects.requireNonNull(senderAlias, "Sender TrustStore alias must not be null");
 
     try (InputStream is = new ByteArrayInputStream(smimeMessageBytes)) {
-      MimeBodyPart encryptedPart = new MimeBodyPart(is);
-      MimeBodyPart decryptedPart = decrypt(encryptedPart, recipientAlias);
+      var encryptedPart = new MimeBodyPart(is);
+      var decryptedPart = decrypt(encryptedPart, recipientAlias);
 
       try {
         return verifyAndExtractPayload(decryptedPart, senderAlias);
@@ -68,6 +59,7 @@ public class SMimeSecurityService {
         cleanupMimePart(decryptedPart);
       }
     } catch (EdiSecurityException e) {
+      log.error("S/MIME processing pipeline failed");
       throw e;
     } catch (Exception e) {
       throw new EdiSecurityException("S/MIME processing pipeline failed", e);
@@ -76,26 +68,28 @@ public class SMimeSecurityService {
 
   private MimeBodyPart decrypt(MimeBodyPart encryptedPart, String recipientAlias) {
     try {
-      SMIMEEnveloped enveloped = new SMIMEEnveloped(encryptedPart);
-      PrivateKey privateKey = keyManagementService.getPrivateKey(recipientAlias);
-      X509Certificate recipientCert = keyManagementService.getCertificate(recipientAlias);
+      var enveloped = new SMIMEEnveloped(encryptedPart);
+      var privateKey = keyManagementService.getPrivateKey(recipientAlias);
+      var recipientCert = keyManagementService.getCertificate(recipientAlias);
 
-      RecipientInformationStore recipients = enveloped.getRecipientInfos();
-      RecipientId recipientId = new JceKeyTransRecipientId(recipientCert);
-      RecipientInformation recipient = recipients.get(recipientId);
+      var recipients = enveloped.getRecipientInfos();
+      var recipientId = new JceKeyTransRecipientId(recipientCert);
+      var recipient = recipients.get(recipientId);
 
-      if (recipient == null) {
-        throw new EdiSecurityException(
-            "No recipient matching certificate alias '"
-                + recipientAlias
-                + "' found in S/MIME EnvelopedData");
-      }
+      Optional.ofNullable(recipient)
+          .orElseThrow(
+              () ->
+                  (new EdiSecurityException(
+                      "No recipient matching certificate alias '"
+                          + recipientAlias
+                          + "' found in S/MIME EnvelopedData")));
 
       return SMIMEUtil.toMimeBodyPart(
           recipient.getContent(
               new JceKeyTransEnvelopedRecipient(privateKey)
                   .setProvider(BouncyCastleProvider.PROVIDER_NAME)));
     } catch (EdiSecurityException e) {
+      log.error("S/MIME Decryption operation failed");
       throw e;
     } catch (Exception e) {
       throw new EdiSecurityException("S/MIME Decryption operation failed", e);
@@ -104,65 +98,91 @@ public class SMimeSecurityService {
 
   private byte[] verifyAndExtractPayload(MimeBodyPart decryptedPart, String senderAlias) {
     try {
-      if (!decryptedPart.isMimeType("multipart/signed")) {
-        throw new EdiSecurityException(
-            "Decrypted payload is not multipart/signed. Digital signature is missing");
-      }
+      validateMimeType(decryptedPart);
 
-      MimeMultipart multipart = (MimeMultipart) decryptedPart.getContent();
-      SMIMESigned signed = new SMIMESigned(multipart);
-      SignerInformationStore signers = signed.getSignerInfos();
-      Store<X509CertificateHolder> certs = signed.getCertificates();
+      var multipart = (MimeMultipart) decryptedPart.getContent();
+      var signed = new SMIMESigned(multipart);
+      var trustedAnchor = keyManagementService.getTrustCertificate(senderAlias);
 
-      X509Certificate trustedAnchor = keyManagementService.getTrustCertificate(senderAlias);
+      signed.getSignerInfos().getSigners().stream()
+          .forEach(signer -> verifySigner(signer, signed.getCertificates(), trustedAnchor));
 
-      for (SignerInformation signer : signers.getSigners()) {
-        var certCollection = certs.getMatches(signer.getSID());
-        if (certCollection.isEmpty()) {
-          throw new EdiSecurityException(
-              "Signer certificate missing from S/MIME SignedData payload");
-        }
+      return extractPayloadBytes((MimeBodyPart) multipart.getBodyPart(0));
 
-        X509CertificateHolder certHolder = (X509CertificateHolder) certCollection.iterator().next();
-        X509Certificate signerCert =
-            new JcaX509CertificateConverter()
-                .setProvider(BouncyCastleProvider.PROVIDER_NAME)
-                .getCertificate(certHolder);
-
-        validateCertificateChain(signerCert, trustedAnchor, certs);
-
-        boolean verified =
-            signer.verify(
-                new JcaSimpleSignerInfoVerifierBuilder()
-                    .setProvider(BouncyCastleProvider.PROVIDER_NAME)
-                    .build(signerCert));
-
-        if (!verified) {
-          throw new EdiSecurityException(
-              "Cryptographic signature verification failed for signer: " + signer.getSID());
-        }
-      }
-
-      MimeBodyPart contentPart = (MimeBodyPart) multipart.getBodyPart(0);
-      try (InputStream contentStream = contentPart.getInputStream();
-          ByteArrayOutputStream buffer = new ByteArrayOutputStream()) {
-        byte[] chunk = new byte[8192];
-        int bytesRead;
-        long totalBytes = 0;
-        while ((bytesRead = contentStream.read(chunk, 0, chunk.length)) != -1) {
-          totalBytes += bytesRead;
-          if (totalBytes > maxAllowedPayloadBytes) {
-            throw new EdiSecurityException(
-                "Extracted payload size exceeds limit: " + maxAllowedPayloadBytes + " bytes");
-          }
-          buffer.write(chunk, 0, bytesRead);
-        }
-        return buffer.toByteArray();
-      }
     } catch (EdiSecurityException e) {
       throw e;
     } catch (Exception e) {
       throw new EdiSecurityException("S/MIME signature verification pipeline failed", e);
+    }
+  }
+
+  private void validateMimeType(MimeBodyPart part) {
+    Optional.ofNullable(part)
+        .filter(p -> uncheck(() -> p.isMimeType("multipart/signed")))
+        .orElseThrow(
+            () ->
+                new EdiSecurityException(
+                    "Decrypted payload is not multipart/signed. Digital signature is missing"));
+  }
+
+  private void verifySigner(
+      SignerInformation signer, Store<X509CertificateHolder> certs, X509Certificate trustedAnchor) {
+    try {
+      var certHolder =
+          certs.getMatches(signer.getSID()).stream()
+              .findFirst()
+              .orElseThrow(
+                  () ->
+                      new EdiSecurityException(
+                          "Signer certificate missing from S/MIME SignedData payload"));
+
+      var signerCert =
+          new JcaX509CertificateConverter()
+              .setProvider(BouncyCastleProvider.PROVIDER_NAME)
+              .getCertificate((X509CertificateHolder) certHolder);
+
+      validateCertificateChain(signerCert, trustedAnchor, certs);
+
+      boolean verified =
+          signer.verify(
+              new JcaSimpleSignerInfoVerifierBuilder()
+                  .setProvider(BouncyCastleProvider.PROVIDER_NAME)
+                  .build(signerCert));
+
+      if (!verified) {
+        throw new EdiSecurityException(
+            "Cryptographic signature verification failed for signer: " + signer.getSID());
+      }
+    } catch (EdiSecurityException e) {
+      log.error("Cryptographic signature verification failed for signer");
+      throw e;
+    } catch (Throwable e) {
+      throw new EdiSecurityException("Failed to verify signer: " + signer.getSID(), e);
+    }
+  }
+
+  private byte[] extractPayloadBytes(MimeBodyPart contentPart) throws Exception {
+    try (InputStream is = contentPart.getInputStream()) {
+      byte[] bytes = is.readNBytes((int) maxAllowedPayloadBytes + 1);
+
+      if (bytes.length > maxAllowedPayloadBytes) {
+        throw new EdiSecurityException(
+            "Extracted payload size exceeds limit: " + maxAllowedPayloadBytes + " bytes");
+      }
+      return bytes;
+    }
+  }
+
+  @FunctionalInterface
+  private interface CheckedSupplier<T> {
+    T get() throws Exception;
+  }
+
+  private static <T> T uncheck(CheckedSupplier<T> supplier) {
+    try {
+      return supplier.get();
+    } catch (Exception e) {
+      throw new RuntimeException(e);
     }
   }
 
@@ -189,7 +209,7 @@ public class SMimeSecurityService {
     List<X509Certificate> certList = new ArrayList<>();
     certList.add(signerCert);
 
-    JcaX509CertificateConverter converter =
+    var converter =
         new JcaX509CertificateConverter().setProvider(BouncyCastleProvider.PROVIDER_NAME);
     if (certStore != null) {
       for (Object holder : certStore.getMatches(null)) {
@@ -205,18 +225,16 @@ public class SMimeSecurityService {
             new CollectionCertStoreParameters(certList),
             BouncyCastleProvider.PROVIDER_NAME);
 
-    X509CertSelector targetConstraints = new X509CertSelector();
+    var targetConstraints = new X509CertSelector();
     targetConstraints.setCertificate(signerCert);
 
-    TrustAnchor anchor = new TrustAnchor(trustAnchorCert, null);
-    PKIXBuilderParameters builderParams =
-        new PKIXBuilderParameters(Collections.singleton(anchor), targetConstraints);
+    var anchor = new TrustAnchor(trustAnchorCert, null);
+    var builderParams = new PKIXBuilderParameters(Collections.singleton(anchor), targetConstraints);
     builderParams.addCertStore(intermediateCertStore);
     builderParams.setRevocationEnabled(false);
 
-    CertPathBuilder builder =
-        CertPathBuilder.getInstance("PKIX", BouncyCastleProvider.PROVIDER_NAME);
-    PKIXCertPathBuilderResult result = (PKIXCertPathBuilderResult) builder.build(builderParams);
+    var builder = CertPathBuilder.getInstance("PKIX", BouncyCastleProvider.PROVIDER_NAME);
+    var result = (PKIXCertPathBuilderResult) builder.build(builderParams);
     log.debug(
         "Validated intermediate certificate chain to anchor: {}",
         result.getTrustAnchor().getTrustedCert().getSubjectDN());
