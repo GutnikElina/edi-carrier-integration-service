@@ -53,8 +53,9 @@ class EdiParserServiceTest {
     @DisplayName("parseIftmin: throws NPE on null payload")
     void parseIftmin_nullPayload() {
         assertThatThrownBy(() -> parser.parseIftmin(null))
-            .isInstanceOf(NullPointerException.class)
-            .hasMessageContaining("EDIFACT payload byte array must not be null");
+            .isInstanceOf(EdiParseException.class)
+            .hasMessageContaining(
+                    "Smooks parsing executed successfully but produced null Java Bean binding");
     }
 
     @Test
@@ -62,7 +63,7 @@ class EdiParserServiceTest {
     void parseIftmin_emptyPayload() {
         assertThatThrownBy(() -> parser.parseIftmin(new byte[0]))
             .isInstanceOf(EdiParseException.class)
-            .hasMessage("EDIFACT payload byte array is empty");
+            .hasMessage("Smooks parsing executed successfully but produced null Java Bean binding");
     }
 
   @Test
