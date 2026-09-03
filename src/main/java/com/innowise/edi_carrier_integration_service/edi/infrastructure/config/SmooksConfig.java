@@ -12,24 +12,27 @@ import org.xml.sax.SAXException;
 @Configuration
 public class SmooksConfig {
 
-  private static final String SMOOKS_CONFIG_PATH = "smooks/smooks-iftmin-config.xml";
+    private static final String SMOOKS_CONFIG_PATH = "smooks/smooks-iftmin-config.xml";
 
-  @Bean(destroyMethod = "close")
-  public Smooks smooksIftminEngine() {
-    return Optional.ofNullable(getClass().getClassLoader().getResourceAsStream(SMOOKS_CONFIG_PATH))
-        .map(this::createSmooks)
-        .orElseThrow(
-            () ->
-                new EdiParseException(
-                    "Smooks configuration resource file not found at path: " + SMOOKS_CONFIG_PATH));
-  }
-
-  private Smooks createSmooks(InputStream stream) {
-    try (stream) {
-      return new Smooks(stream);
-    } catch (IOException | SAXException e) {
-      throw new EdiParseException(
-          "Failed to construct Singleton Smooks engine instance from: " + SMOOKS_CONFIG_PATH, e);
+    @Bean(destroyMethod = "close")
+    public Smooks smooksIftminEngine() {
+        return Optional
+            .ofNullable(getClass().getClassLoader().getResourceAsStream(SMOOKS_CONFIG_PATH))
+            .map(this::createSmooks)
+            .orElseThrow(
+                    () -> new EdiParseException(
+                            "Smooks configuration resource file not found at path: "
+                                    + SMOOKS_CONFIG_PATH));
     }
-  }
+
+    private Smooks createSmooks(InputStream stream) {
+        try (stream) {
+            return new Smooks(stream);
+        } catch (IOException | SAXException e) {
+            throw new EdiParseException(
+                    "Failed to construct Singleton Smooks engine instance from: "
+                            + SMOOKS_CONFIG_PATH,
+                    e);
+        }
+    }
 }

@@ -21,13 +21,15 @@ import org.springframework.test.util.ReflectionTestUtils;
 @ExtendWith(MockitoExtension.class)
 class EdiArchiveServiceTest {
 
-  @Mock private MinioClient minioClient;
-  @InjectMocks private EdiArchiveService service;
+    @Mock
+    private MinioClient minioClient;
+    @InjectMocks
+    private EdiArchiveService service;
 
-  @BeforeEach
-  void setUp() {
-    ReflectionTestUtils.setField(service, "bucketName", "test-bucket");
-  }
+    @BeforeEach
+    void setUp() {
+        ReflectionTestUtils.setField(service, "bucketName", "test-bucket");
+    }
 
   @Test
   @DisplayName("initBucket: creates bucket if missing")
@@ -54,46 +56,46 @@ class EdiArchiveServiceTest {
         .hasMessageContaining("Failed to verify or create MinIO bucket");
   }
 
-  @Test
-  @DisplayName("storeRawPayload: success")
-  void storeRawPayload_success() throws Exception {
-    byte[] payload = "data".getBytes();
-    String result = service.storeRawPayload("obj", payload, "text/plain");
-    assertThat(result).isEqualTo("obj");
-    verify(minioClient).putObject(any());
-  }
+    @Test
+    @DisplayName("storeRawPayload: success")
+    void storeRawPayload_success() throws Exception {
+        byte[] payload = "data".getBytes();
+        String result = service.storeRawPayload("obj", payload, "text/plain");
+        assertThat(result).isEqualTo("obj");
+        verify(minioClient).putObject(any());
+    }
 
-  @Test
-  @DisplayName("storeRawPayload: throws on null objectName")
-  void storeRawPayload_nullObjectName() {
-    assertThatThrownBy(() -> service.storeRawPayload(null, new byte[1], "text"))
-        .isInstanceOf(NullPointerException.class)
-        .hasMessageContaining("Object name must not be null");
-  }
+    @Test
+    @DisplayName("storeRawPayload: throws on null objectName")
+    void storeRawPayload_nullObjectName() {
+        assertThatThrownBy(() -> service.storeRawPayload(null, new byte[1], "text"))
+            .isInstanceOf(NullPointerException.class)
+            .hasMessageContaining("Object name must not be null");
+    }
 
-  @Test
-  @DisplayName("storeRawPayload: throws on null payload")
-  void storeRawPayload_nullPayload() {
-    assertThatThrownBy(() -> service.storeRawPayload("obj", null, "text"))
-        .isInstanceOf(NullPointerException.class)
-        .hasMessageContaining("Payload bytes must not be null");
-  }
+    @Test
+    @DisplayName("storeRawPayload: throws on null payload")
+    void storeRawPayload_nullPayload() {
+        assertThatThrownBy(() -> service.storeRawPayload("obj", null, "text"))
+            .isInstanceOf(NullPointerException.class)
+            .hasMessageContaining("Payload bytes must not be null");
+    }
 
-  @Test
-  @DisplayName("storeRawPayload: throws on empty payload")
-  void storeRawPayload_emptyPayload() {
-    assertThatThrownBy(() -> service.storeRawPayload("obj", new byte[0], "text"))
-        .isInstanceOf(EdiProcessingException.class)
-        .hasMessage("Payload bytes must not be empty for archiving");
-  }
+    @Test
+    @DisplayName("storeRawPayload: throws on empty payload")
+    void storeRawPayload_emptyPayload() {
+        assertThatThrownBy(() -> service.storeRawPayload("obj", new byte[0], "text"))
+            .isInstanceOf(EdiProcessingException.class)
+            .hasMessage("Payload bytes must not be empty for archiving");
+    }
 
-  @Test
-  void storeRawPayload_minioException() throws Exception {
-    doThrow(new IOException("IO error")).when(minioClient).putObject(any(PutObjectArgs.class));
-    assertThatThrownBy(() -> service.storeRawPayload("obj", "data".getBytes(), "text"))
-        .isInstanceOf(EdiProcessingException.class)
-        .hasMessageContaining("S3 payload storage operation failed");
-  }
+    @Test
+    void storeRawPayload_minioException() throws Exception {
+        doThrow(new IOException("IO error")).when(minioClient).putObject(any(PutObjectArgs.class));
+        assertThatThrownBy(() -> service.storeRawPayload("obj", "data".getBytes(), "text"))
+            .isInstanceOf(EdiProcessingException.class)
+            .hasMessageContaining("S3 payload storage operation failed");
+    }
 
   @Test
   @DisplayName("storeRawPayload: rethrows on unexpected exception")

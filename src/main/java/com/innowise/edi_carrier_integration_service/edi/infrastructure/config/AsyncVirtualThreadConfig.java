@@ -12,10 +12,10 @@ import org.springframework.scheduling.annotation.EnableAsync;
 @EnableRetry
 public class AsyncVirtualThreadConfig {
 
-  @Bean(name = "ediAsyncTaskExecutor")
-  public AsyncTaskExecutor taskExecutor() {
-    var executor = new SimpleAsyncTaskExecutor("edi-vt-");
-    executor.setVirtualThreads(true);
-    return executor;
-  }
+    @Bean(name = "ediAsyncTaskExecutor")
+    public AsyncTaskExecutor taskExecutor() {
+        var executor = new SimpleAsyncTaskExecutor("edi-vt-");
+        executor.setVirtualThreads(true);
+        return executor;
+    }
 }

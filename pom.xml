@@ -180,11 +180,9 @@
 				<version>${spotless.version}</version>
 				<configuration>
 					<java>
-						<googleJavaFormat>
-							<version>${googleJavaFormat.version}</version>
-							<style>GOOGLE</style>
-						</googleJavaFormat>
-						<removeUnusedImports/>
+						<eclipse>
+							<file>${project.basedir}/eclipse-formatter.xml</file>
+						</eclipse>
 					</java>
 				</configuration>
 			</plugin>

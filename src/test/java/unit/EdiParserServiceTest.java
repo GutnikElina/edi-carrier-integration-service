@@ -22,45 +22,48 @@ import org.smooks.io.source.ByteSource;
 @ExtendWith(MockitoExtension.class)
 class EdiParserServiceTest {
 
-  @Mock private Smooks smooks;
-  @Mock private ExecutionContext ctx;
-  @InjectMocks private EdiParserService parser;
+    @Mock
+    private Smooks smooks;
+    @Mock
+    private ExecutionContext ctx;
+    @InjectMocks
+    private EdiParserService parser;
 
-  @Test
-  @DisplayName("parseIftmin: success")
-  void parseIftmin_success() throws Exception {
-    byte[] payload = "EDIFACT".getBytes();
-    IftminInstructionDto expected = new IftminInstructionDto();
-    when(smooks.createExecutionContext()).thenReturn(ctx);
+    @Test
+    @DisplayName("parseIftmin: success")
+    void parseIftmin_success() throws Exception {
+        byte[] payload = "EDIFACT".getBytes();
+        IftminInstructionDto expected = new IftminInstructionDto();
+        when(smooks.createExecutionContext()).thenReturn(ctx);
 
-    doAnswer(
-            inv -> {
-              JavaSink sink = inv.getArgument(2);
-              sink.getResultMap().put("iftminDto", expected);
-              return null;
-            })
-        .when(smooks)
-        .filterSource(any(), any(ByteSource.class), any(JavaSink.class));
+        doAnswer(
+                inv -> {
+                    JavaSink sink = inv.getArgument(2);
+                    sink.getResultMap().put("iftminDto", expected);
+                    return null;
+                })
+            .when(smooks)
+            .filterSource(any(), any(ByteSource.class), any(JavaSink.class));
 
-    IftminInstructionDto result = parser.parseIftmin(payload);
-    assertThat(result).isSameAs(expected);
-  }
+        IftminInstructionDto result = parser.parseIftmin(payload);
+        assertThat(result).isSameAs(expected);
+    }
 
-  @Test
-  @DisplayName("parseIftmin: throws NPE on null payload")
-  void parseIftmin_nullPayload() {
-    assertThatThrownBy(() -> parser.parseIftmin(null))
-        .isInstanceOf(NullPointerException.class)
-        .hasMessageContaining("EDIFACT payload byte array must not be null");
-  }
+    @Test
+    @DisplayName("parseIftmin: throws NPE on null payload")
+    void parseIftmin_nullPayload() {
+        assertThatThrownBy(() -> parser.parseIftmin(null))
+            .isInstanceOf(NullPointerException.class)
+            .hasMessageContaining("EDIFACT payload byte array must not be null");
+    }
 
-  @Test
-  @DisplayName("parseIftmin: throws EdiParseException on empty payload")
-  void parseIftmin_emptyPayload() {
-    assertThatThrownBy(() -> parser.parseIftmin(new byte[0]))
-        .isInstanceOf(EdiParseException.class)
-        .hasMessage("EDIFACT payload byte array is empty");
-  }
+    @Test
+    @DisplayName("parseIftmin: throws EdiParseException on empty payload")
+    void parseIftmin_emptyPayload() {
+        assertThatThrownBy(() -> parser.parseIftmin(new byte[0]))
+            .isInstanceOf(EdiParseException.class)
+            .hasMessage("EDIFACT payload byte array is empty");
+    }
 
   @Test
   @DisplayName("parseIftmin: throws EdiParseException when Smooks fails")
