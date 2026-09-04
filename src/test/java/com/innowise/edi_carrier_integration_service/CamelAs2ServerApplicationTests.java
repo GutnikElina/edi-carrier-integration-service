@@ -1,5 +1,8 @@
 package com.innowise.edi_carrier_integration_service;
 
+import com.innowise.edi_carrier_integration_service.edi.infrastructure.archive.EdiArchiveService;
+import com.innowise.edi_carrier_integration_service.edi.infrastructure.crypto.KeyManagementService;
+import io.minio.MinioClient;
 import org.apache.camel.CamelContext;
 import org.apache.camel.EndpointInject;
 import org.apache.camel.ProducerTemplate;
@@ -12,12 +15,19 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
-/** Integration tests for AS2 inbound route. */
 @SpringBootTest
 @UseAdviceWith
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class CamelAs2ServerApplicationTests {
+
+    @MockBean
+    private KeyManagementService keyManagementService;
+    @MockBean
+    private EdiArchiveService ediArchiveService;
+    @MockBean
+    private MinioClient minioClient;
 
     @Autowired
     private CamelContext camelContext;
