@@ -7,16 +7,17 @@ import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
 import io.minio.errors.MinioException;
 import jakarta.annotation.PostConstruct;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Objects;
 
 @Slf4j
 @Service
@@ -49,7 +50,7 @@ public class EdiArchiveService {
     }
 
     @Retryable(retryFor = {
-            EdiProcessingException.class}, maxAttempts = 3, backoff = @Backoff(delay = 1000, multiplier = 2.0))
+            EdiProcessingException.class}, backoff = @Backoff(delay = 1000, multiplier = 2.0))
     public String storeRawPayload(String objectName, byte[] payload, String contentType) {
         Objects.requireNonNull(objectName, "Object name must not be null");
         Objects.requireNonNull(payload, "Payload bytes must not be null");
@@ -60,7 +61,7 @@ public class EdiArchiveService {
         try (InputStream is = new ByteArrayInputStream(payload)) {
             minioClient.putObject(
                     PutObjectArgs.builder().bucket(bucketName).object(objectName).stream(
-                            is, payload.length, -1)
+                            is, (long) payload.length, -1L)
                         .contentType(contentType)
                         .build());
             log.info("Successfully stored non-repudiation document to S3: {}/{}", bucketName,

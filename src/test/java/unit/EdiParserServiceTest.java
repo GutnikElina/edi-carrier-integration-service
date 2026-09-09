@@ -31,9 +31,10 @@ class EdiParserServiceTest {
 
     @Test
     @DisplayName("parseIftmin: success")
-    void parseIftmin_success() throws Exception {
+    void parseIftmin_success() {
         byte[] payload = "EDIFACT".getBytes();
-        IftminInstructionDto expected = new IftminInstructionDto();
+        IftminInstructionDto expected = new IftminInstructionDto(null, null,
+                null, null, null, null, null);
         when(smooks.createExecutionContext()).thenReturn(ctx);
 
         doAnswer(
@@ -68,7 +69,7 @@ class EdiParserServiceTest {
 
   @Test
   @DisplayName("parseIftmin: throws EdiParseException when Smooks fails")
-  void parseIftmin_smooksException() throws Exception {
+  void parseIftmin_smooksException() {
     when(smooks.createExecutionContext()).thenReturn(ctx);
     doThrow(new RuntimeException("smooks error")).when(smooks).filterSource(any(), any(), any());
 
@@ -79,7 +80,7 @@ class EdiParserServiceTest {
 
   @Test
   @DisplayName("parseIftmin: throws EdiParseException when DTO is null")
-  void parseIftmin_dtoNull() throws Exception {
+  void parseIftmin_dtoNull() {
     when(smooks.createExecutionContext()).thenReturn(ctx);
     doAnswer(
             inv -> {
@@ -97,7 +98,7 @@ class EdiParserServiceTest {
 
   @Test
   @DisplayName("parseIftmin: rethrows EdiParseException (catch block)")
-  void parseIftmin_rethrowsEdiParseException() throws Exception {
+  void parseIftmin_rethrowsEdiParseException() {
     when(smooks.createExecutionContext()).thenReturn(ctx);
     doThrow(new EdiParseException("inner")).when(smooks).filterSource(any(), any(), any());
 

@@ -13,6 +13,7 @@ public class BouncyCastleConfig {
     public void init() {
         Optional.ofNullable(Security.getProvider(BouncyCastleProvider.PROVIDER_NAME))
             .ifPresentOrElse(provider -> {
-            }, () -> Security.addProvider(new BouncyCastleProvider()));
+            },
+                    () -> Security.addProvider(new BouncyCastleProvider()));
     }
 }

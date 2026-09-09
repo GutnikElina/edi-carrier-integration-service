@@ -2,18 +2,21 @@ package com.innowise.edi_carrier_integration_service.edi.infrastructure.parser;
 
 import com.innowise.edi_carrier_integration_service.edi.domain.exception.EdiParseException;
 import com.innowise.edi_carrier_integration_service.edi.domain.model.IftminInstructionDto;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.smooks.Smooks;
 import org.smooks.api.ExecutionContext;
 import org.smooks.io.sink.JavaSink;
 import org.smooks.io.source.ByteSource;
+import org.springframework.aot.hint.annotation.RegisterReflectionForBinding;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@RegisterReflectionForBinding(IftminInstructionDto.class)
 public class EdiParserService {
 
     private final Smooks smooksIftminEngine;
@@ -39,7 +42,7 @@ public class EdiParserService {
                         dto -> {
                             log.info(
                                     "Successfully parsed EDIFACT IFTMIN payload, controlNumber: {}",
-                                    dto.getControlNumber());
+                                    dto.controlNumber());
                             return dto;
                         })
                 .orElse(null);

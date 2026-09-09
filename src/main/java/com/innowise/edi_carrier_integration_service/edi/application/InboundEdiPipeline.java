@@ -72,7 +72,7 @@ public class InboundEdiPipeline {
         IftminInstructionDto instructionDto = ediParserService.parseIftmin(decryptedEdifactPayload);
         log.info(
                 "Pipeline decrypted and parsed IFTMIN document. ControlNumber: {}, MessageID: {}",
-                instructionDto.getControlNumber(),
+                instructionDto.controlNumber(),
                 originalMessageId);
 
         String mdn = as2MdnGenerator.generateMdn(

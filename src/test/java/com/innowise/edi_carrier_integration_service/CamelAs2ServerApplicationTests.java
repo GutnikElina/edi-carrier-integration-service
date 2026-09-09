@@ -15,18 +15,18 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 @SpringBootTest
 @UseAdviceWith
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class CamelAs2ServerApplicationTests {
 
-    @MockBean
+    @MockitoBean
     private KeyManagementService keyManagementService;
-    @MockBean
+    @MockitoBean
     private EdiArchiveService ediArchiveService;
-    @MockBean
+    @MockitoBean
     private MinioClient minioClient;
 
     @Autowired
