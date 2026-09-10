@@ -2,18 +2,16 @@ package com.innowise.edi_carrier_integration_service.service.impl;
 
 import com.innowise.edi_carrier_integration_service.dto.InboundEdiResult;
 import com.innowise.edi_carrier_integration_service.exception.PayloadTooLargeException;
-import com.innowise.edi_carrier_integration_service.dto.IftminInstructionDto;
 import com.innowise.edi_carrier_integration_service.service.*;
-
-import java.util.Objects;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+
+import java.util.Objects;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 @Service
@@ -38,6 +36,39 @@ public class InboundEdiPipelineServiceImpl implements InboundEdiPipelineService 
             String senderAs2Id,
             String receiverAs2Id) {
 
+        validateInputData(rawSmimeBytes, originalMessageId, recipientAlias, senderAlias,
+                senderAs2Id, receiverAs2Id);
+
+        String objectKey = "raw/" + UUID.randomUUID() + ".smime";
+        log.info("Starting pipeline execution for MessageID: {}. Assigned S3 Key: {}",
+                originalMessageId,
+                objectKey);
+
+        String s3ObjectKey = ediArchiveService.saveRawPayload(objectKey, rawSmimeBytes,
+                "application/pkcs7-mime");
+
+        byte[] decryptedEdifactPayload = sMimeSecurityService.decryptAndVerify(rawSmimeBytes,
+                recipientAlias, senderAlias);
+
+        var instructionDto = ediParserService.parseIftmin(decryptedEdifactPayload);
+        log.info("Pipeline decrypted and parsed IFTMIN document. ControlNumber: {}, MessageID: {}",
+                instructionDto.controlNumber(),
+                originalMessageId);
+
+        var mdn = as2MdnGeneratorService.generateMdn(decryptedEdifactPayload, originalMessageId,
+                senderAs2Id, receiverAs2Id);
+
+        return CompletableFuture
+            .completedFuture(new InboundEdiResult(instructionDto, mdn, s3ObjectKey));
+    }
+
+    private void validateInputData(byte[] rawSmimeBytes,
+            String originalMessageId,
+            String recipientAlias,
+            String senderAlias,
+            String senderAs2Id,
+            String receiverAs2Id) {
+
         Objects.requireNonNull(rawSmimeBytes, "Raw S/MIME bytes array must not be null");
         Objects.requireNonNull(originalMessageId, "Original Message-ID must not be null");
         Objects.requireNonNull(recipientAlias, "Recipient KeyStore alias must not be null");
@@ -53,26 +84,6 @@ public class InboundEdiPipelineServiceImpl implements InboundEdiPipelineService 
                             + maxAllowedPayloadBytes
                             + " bytes");
         }
-
-        String objectKey = "raw/" + UUID.randomUUID() + ".smime";
-        log.info("Starting pipeline execution for MessageID: {}. Assigned S3 Key: {}",
-                originalMessageId,
-                objectKey);
-
-        String s3Path = ediArchiveService.storeRawPayload(objectKey, rawSmimeBytes,
-                "application/pkcs7-mime");
-
-        byte[] decryptedEdifactPayload = sMimeSecurityService.decryptAndVerify(rawSmimeBytes,
-                recipientAlias, senderAlias);
-
-        IftminInstructionDto instructionDto = ediParserService.parseIftmin(decryptedEdifactPayload);
-        log.info("Pipeline decrypted and parsed IFTMIN document. ControlNumber: {}, MessageID: {}",
-                instructionDto.controlNumber(),
-                originalMessageId);
-
-        String mdn = as2MdnGeneratorService.generateMdn(decryptedEdifactPayload, originalMessageId,
-                senderAs2Id, receiverAs2Id);
-
-        return CompletableFuture.completedFuture(new InboundEdiResult(instructionDto, mdn, s3Path));
     }
+
 }

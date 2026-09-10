@@ -1,19 +1,22 @@
 package unit;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 import com.innowise.edi_carrier_integration_service.service.As2MdnGeneratorService;
 import com.innowise.edi_carrier_integration_service.service.impl.As2MdnGeneratorServiceImpl;
-import java.security.Security;
+import com.innowise.edi_carrier_integration_service.service.impl.MessageIntegrityServiceImpl;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.security.Security;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 class As2MdnGeneratorServiceImplTest {
 
-    private final As2MdnGeneratorService generator = new As2MdnGeneratorServiceImpl();
+    private final As2MdnGeneratorService generator = new As2MdnGeneratorServiceImpl(
+            new MessageIntegrityServiceImpl());
 
     @BeforeAll
     static void init() {

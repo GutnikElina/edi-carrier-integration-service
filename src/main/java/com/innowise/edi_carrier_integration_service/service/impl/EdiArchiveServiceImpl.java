@@ -10,6 +10,7 @@ import io.minio.errors.MinioException;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
@@ -17,8 +18,6 @@ import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.Objects;
 
 @Slf4j
 @Service
@@ -34,16 +33,19 @@ public class EdiArchiveServiceImpl implements EdiArchiveService {
     @PostConstruct
     public void initBucket() {
         try {
-            boolean found = minioClient
-                .bucketExists(BucketExistsArgs.builder().bucket(bucketName).build());
-            if (!found) {
-                minioClient.makeBucket(MakeBucketArgs.builder().bucket(bucketName).build());
+            var isExists = minioClient.bucketExists(BucketExistsArgs.builder()
+                .bucket(bucketName)
+                .build());
+            if (!isExists) {
+                minioClient.makeBucket(MakeBucketArgs.builder()
+                    .bucket(bucketName)
+                    .build());
                 log.info("MinIO bucket '{}' created successfully during initialization",
                         bucketName);
             } else {
                 log.info("MinIO bucket '{}' verified and ready", bucketName);
             }
-        } catch (Exception e) {
+        } catch (MinioException e) {
             throw new EdiProcessingException(
                     "Failed to verify or create MinIO bucket during service initialization: "
                             + bucketName,
@@ -54,29 +56,25 @@ public class EdiArchiveServiceImpl implements EdiArchiveService {
     @Override
     @Retryable(retryFor = {
             EdiProcessingException.class}, backoff = @Backoff(delay = 1000, multiplier = 2.0))
-    public String storeRawPayload(String objectName, byte[] payload, String contentType) {
-        Objects.requireNonNull(objectName, "Object name must not be null");
-        Objects.requireNonNull(payload, "Payload bytes must not be null");
+    public String saveRawPayload(@NotNull String objectKey, @NotNull byte[] payload,
+            String contentType) {
         if (payload.length == 0) {
             throw new EdiProcessingException("Payload bytes must not be empty for archiving");
         }
-
-        try (InputStream is = new ByteArrayInputStream(payload)) {
-            minioClient.putObject(
-                    PutObjectArgs.builder().bucket(bucketName).object(objectName).stream(
-                            is, (long) payload.length, -1L)
-                        .contentType(contentType)
-                        .build());
-            log.info("Successfully stored non-repudiation document to S3: {}/{}", bucketName,
-                    objectName);
-            return objectName;
+        try (var inputStream = new ByteArrayInputStream(payload)) {
+            minioClient.putObject(PutObjectArgs.builder()
+                .bucket(bucketName)
+                .object(objectKey)
+                .stream(inputStream, (long) payload.length, -1L)
+                .contentType(contentType)
+                .build());
+            log.info("Successfully stored non-repudiation document to S3: {}/{}",
+                    bucketName, objectKey);
+            return objectKey;
         } catch (MinioException | IOException e) {
-            log.error("S3 upload attempt failed for object: {}. Retrying...", objectName);
-            throw new EdiProcessingException(
-                    "S3 payload storage operation failed for object: " + objectName, e);
-        } catch (Exception e) {
-            throw new EdiProcessingException(
-                    "Unexpected error during S3 payload storage for object: " + objectName, e);
+            log.error("S3 upload attempt failed for object: {}. Retrying...", objectKey);
+            throw new EdiProcessingException("S3 payload storage operation failed for object: "
+                    + objectKey, e);
         }
     }
 }

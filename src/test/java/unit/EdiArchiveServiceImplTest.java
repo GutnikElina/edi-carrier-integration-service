@@ -59,50 +59,50 @@ class EdiArchiveServiceImplTest {
 
     @Test
     @DisplayName("storeRawPayload: success")
-    void storeRawPayload_success() throws Exception {
+    void saveRawPayload_success() throws Exception {
         byte[] payload = "data".getBytes();
-        String result = service.storeRawPayload("obj", payload, "text/plain");
+        String result = service.saveRawPayload("obj", payload, "text/plain");
         assertThat(result).isEqualTo("obj");
         verify(minioClient).putObject(any());
     }
 
     @Test
     @DisplayName("storeRawPayload: throws on null objectName")
-    void storeRawPayload_nullObjectName() {
-        assertThatThrownBy(() -> service.storeRawPayload(null, new byte[1], "text/plain"))
+    void saveRawPayload_nullObjectName() {
+        assertThatThrownBy(() -> service.saveRawPayload(null, new byte[1], "text/plain"))
             .isInstanceOf(NullPointerException.class)
             .hasMessageContaining("Object name must not be null");
     }
 
     @Test
     @DisplayName("storeRawPayload: throws on null payload")
-    void storeRawPayload_nullPayload() {
-        assertThatThrownBy(() -> service.storeRawPayload("obj", null, "text/plain"))
+    void saveRawPayload_nullPayload() {
+        assertThatThrownBy(() -> service.saveRawPayload("obj", null, "text/plain"))
             .isInstanceOf(NullPointerException.class)
             .hasMessageContaining("Payload bytes must not be null");
     }
 
     @Test
     @DisplayName("storeRawPayload: throws on empty payload")
-    void storeRawPayload_emptyPayload() {
-        assertThatThrownBy(() -> service.storeRawPayload("obj", new byte[0], "text/plain"))
+    void saveRawPayload_emptyPayload() {
+        assertThatThrownBy(() -> service.saveRawPayload("obj", new byte[0], "text/plain"))
             .isInstanceOf(EdiProcessingException.class)
             .hasMessage("Payload bytes must not be empty for archiving");
     }
 
     @Test
-    void storeRawPayload_minioException() throws Exception {
+    void saveRawPayload_minioException() throws Exception {
         InternalException mockedMinioException = mock(InternalException.class);
         doThrow(mockedMinioException).when(minioClient).putObject(any(PutObjectArgs.class));
-        assertThatThrownBy(() -> service.storeRawPayload("obj", "data".getBytes(), "text/plain"))
+        assertThatThrownBy(() -> service.saveRawPayload("obj", "data".getBytes(), "text/plain"))
             .isInstanceOf(EdiProcessingException.class)
             .hasMessageContaining("S3 payload storage operation failed for object: obj");
     }
 
     @Test
     @DisplayName("storeRawPayload: rethrows on unexpected exception")
-    void storeRawPayload_unexpectedException() {
-        assertThatThrownBy(() -> service.storeRawPayload("obj", "data".getBytes(), "text"))
+    void saveRawPayload_unexpectedException() {
+        assertThatThrownBy(() -> service.saveRawPayload("obj", "data".getBytes(), "text"))
             .isInstanceOf(EdiProcessingException.class)
             .hasMessageContaining("Unexpected error");
     }
