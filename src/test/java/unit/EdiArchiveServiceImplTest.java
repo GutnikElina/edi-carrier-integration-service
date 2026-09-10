@@ -1,7 +1,7 @@
 package unit;
 
-import com.innowise.edi_carrier_integration_service.edi.domain.exception.EdiProcessingException;
-import com.innowise.edi_carrier_integration_service.edi.infrastructure.archive.EdiArchiveService;
+import com.innowise.edi_carrier_integration_service.exception.EdiProcessingException;
+import com.innowise.edi_carrier_integration_service.service.impl.EdiArchiveServiceImpl;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
 import io.minio.errors.InternalException;
@@ -20,12 +20,12 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class EdiArchiveServiceTest {
+class EdiArchiveServiceImplTest {
 
     @Mock
     private MinioClient minioClient;
     @InjectMocks
-    private EdiArchiveService service;
+    private EdiArchiveServiceImpl service;
 
     @BeforeEach
     void setUp() {

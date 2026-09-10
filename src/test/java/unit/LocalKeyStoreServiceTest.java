@@ -3,8 +3,8 @@ package unit;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.innowise.edi_carrier_integration_service.edi.domain.exception.EdiSecurityException;
-import com.innowise.edi_carrier_integration_service.edi.infrastructure.crypto.LocalKeyStoreService;
+import com.innowise.edi_carrier_integration_service.exception.EdiSecurityException;
+import com.innowise.edi_carrier_integration_service.service.impl.LocalKeyStoreService;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.security.KeyStore;

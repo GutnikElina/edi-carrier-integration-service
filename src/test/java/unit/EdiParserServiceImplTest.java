@@ -5,9 +5,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-import com.innowise.edi_carrier_integration_service.edi.domain.exception.EdiParseException;
-import com.innowise.edi_carrier_integration_service.edi.domain.model.IftminInstructionDto;
-import com.innowise.edi_carrier_integration_service.edi.infrastructure.parser.EdiParserService;
+import com.innowise.edi_carrier_integration_service.exception.EdiParseException;
+import com.innowise.edi_carrier_integration_service.dto.IftminInstructionDto;
+import com.innowise.edi_carrier_integration_service.service.impl.EdiParserServiceImpl;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,14 +20,14 @@ import org.smooks.io.sink.JavaSink;
 import org.smooks.io.source.ByteSource;
 
 @ExtendWith(MockitoExtension.class)
-class EdiParserServiceTest {
+class EdiParserServiceImplTest {
 
     @Mock
     private Smooks smooks;
     @Mock
     private ExecutionContext ctx;
     @InjectMocks
-    private EdiParserService parser;
+    private EdiParserServiceImpl parser;
 
     @Test
     @DisplayName("parseIftmin: success")

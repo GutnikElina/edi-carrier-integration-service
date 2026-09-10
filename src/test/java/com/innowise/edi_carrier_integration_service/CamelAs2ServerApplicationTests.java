@@ -1,7 +1,7 @@
 package com.innowise.edi_carrier_integration_service;
 
-import com.innowise.edi_carrier_integration_service.edi.infrastructure.archive.EdiArchiveService;
-import com.innowise.edi_carrier_integration_service.edi.infrastructure.crypto.KeyManagementService;
+import com.innowise.edi_carrier_integration_service.service.impl.EdiArchiveServiceImpl;
+import com.innowise.edi_carrier_integration_service.service.KeyManagementService;
 import io.minio.MinioClient;
 import org.apache.camel.CamelContext;
 import org.apache.camel.EndpointInject;
@@ -25,7 +25,7 @@ class CamelAs2ServerApplicationTests {
     @MockitoBean
     private KeyManagementService keyManagementService;
     @MockitoBean
-    private EdiArchiveService ediArchiveService;
+    private EdiArchiveServiceImpl ediArchiveService;
     @MockitoBean
     private MinioClient minioClient;
 
