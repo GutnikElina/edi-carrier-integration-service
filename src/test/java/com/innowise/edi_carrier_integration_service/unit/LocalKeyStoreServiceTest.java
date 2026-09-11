@@ -1,4 +1,4 @@
-package unit;
+package com.innowise.edi_carrier_integration_service.unit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -10,6 +10,8 @@ import java.io.FileOutputStream;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
+
+import com.innowise.edi_carrier_integration_service.util.TestSmimeUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

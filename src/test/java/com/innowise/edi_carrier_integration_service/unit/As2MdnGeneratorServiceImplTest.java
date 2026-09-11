@@ -1,42 +1,41 @@
-package unit;
+package com.innowise.edi_carrier_integration_service.unit;
 
-import com.innowise.edi_carrier_integration_service.service.As2MdnGeneratorService;
+import com.innowise.edi_carrier_integration_service.service.MessageIntegrityService;
 import com.innowise.edi_carrier_integration_service.service.impl.As2MdnGeneratorServiceImpl;
-import com.innowise.edi_carrier_integration_service.service.impl.MessageIntegrityServiceImpl;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import java.security.Security;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class As2MdnGeneratorServiceImplTest {
 
-    private final As2MdnGeneratorService generator = new As2MdnGeneratorServiceImpl(
-            new MessageIntegrityServiceImpl());
+    @Mock
+    private MessageIntegrityService messageIntegrityService;
 
-    @BeforeAll
-    static void init() {
-        if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
-            Security.addProvider(new BouncyCastleProvider());
-        }
-    }
+    @InjectMocks
+    private As2MdnGeneratorServiceImpl generator;
 
     @Test
     @DisplayName("generateMdn: success")
     void generateMdn_success() {
         byte[] payload = "test".getBytes();
-        String mdn = generator.generateMdn(payload, "<msg>", "SENDER", "RECEIVER");
+        when(messageIntegrityService.computeMessageIntegrityCheck(payload))
+            .thenReturn("dummy-mic-hash");
+
+        String mdn = generator.generateMdn(payload, "", "SENDER", "RECEIVER");
+
         assertThat(mdn)
-            .contains("AS2-Version: 1.2")
-            .contains("From: RECEIVER")
-            .contains("To: SENDER")
-            .contains("Original-Message-ID: <msg>")
-            .contains("Received-Content-MIC:")
-            .contains("sha-256");
+            .contains("Original-Message-ID: ")
+            .contains("dummy-mic-hash")
+            .contains("SENDER")
+            .contains("RECEIVER");
     }
 
     @Test

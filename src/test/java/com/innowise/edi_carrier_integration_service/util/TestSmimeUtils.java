@@ -1,4 +1,4 @@
-package unit;
+package com.innowise.edi_carrier_integration_service.util;
 
 import java.math.BigInteger;
 import java.security.*;
