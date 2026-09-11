@@ -28,6 +28,10 @@ public final class EdiCarrierIntegrationConstants {
             --%s--
             """;
 
+    public static final String SENDER_ALIAS = "mock-sender-alias"; // TODO change to actual alias
+    public static final String RECIPIENT_ALIAS = "mock-recipient-alias"; // TODO change to actual
+                                                                         // alias
+
     private EdiCarrierIntegrationConstants() {
     }
 }

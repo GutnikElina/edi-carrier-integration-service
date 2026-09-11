@@ -3,6 +3,7 @@ package com.innowise.edi_carrier_integration_service.service.impl;
 import com.innowise.edi_carrier_integration_service.config.As2Configuration;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.springframework.stereotype.Service;
@@ -40,13 +41,10 @@ public final class As2InboundRouteBuilderService extends RouteBuilder {
      */
     @Override
     public void configure() {
-        final String serverUrl = new StringBuilder("http://")
-            .append(as2Config.getHOST())
-            .append(":")
-            .append(as2Config.getPORT())
-            .append(as2Config.getPATH())
-            .toString();
+        final String serverUrl = "http://" + as2Config.getHOST() + ":"
+                + as2Config.getPORT() + as2Config.getPATH();
         log.info(LOG_SERVER_START, serverUrl);
+
         final String as2Uri = String.format(AS2_URI_PATTERN, as2Config.getPORT(),
                 as2Config.getPATH());
 
@@ -54,6 +52,8 @@ public final class As2InboundRouteBuilderService extends RouteBuilder {
             .routeId("as2-inbound-route")
             .log(LOG_RECEIVED)
             .process(mdnProcessor)
+            .setHeader(Exchange.HTTP_RESPONSE_CODE, constant(200))
+            .setBody(constant(""))
             .log(LOG_FINISHED);
     }
 }
