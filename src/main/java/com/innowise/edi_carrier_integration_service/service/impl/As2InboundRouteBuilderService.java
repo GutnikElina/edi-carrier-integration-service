@@ -1,17 +1,17 @@
-package com.innowise.edi_carrier_integration_service.util;
+package com.innowise.edi_carrier_integration_service.service.impl;
 
 import com.innowise.edi_carrier_integration_service.config.As2Configuration;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 /** Camel route for receiving AS2 messages. */
 @Slf4j
-@Component
+@Service
 @RequiredArgsConstructor
-public final class As2InboundRouteBuilder extends RouteBuilder {
+public final class As2InboundRouteBuilderService extends RouteBuilder {
 
     /** URI pattern for AS2 server endpoint. */
     private static final String AS2_URI_PATTERN = "as2://server/listen?serverPortNumber=%d&requestUriPattern=%s";

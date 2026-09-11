@@ -11,7 +11,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 import java.util.UUID;
 
-import static com.innowise.edi_carrier_integration_service.util.EdiCarrierIntegrationConst.MDN_TEMPLATE;
+import static com.innowise.edi_carrier_integration_service.util.EdiCarrierIntegrationConstants.MDN_TEMPLATE;
 
 @Service
 @RequiredArgsConstructor

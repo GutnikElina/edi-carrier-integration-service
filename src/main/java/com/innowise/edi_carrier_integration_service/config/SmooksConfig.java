@@ -1,13 +1,16 @@
 package com.innowise.edi_carrier_integration_service.config;
 
 import com.innowise.edi_carrier_integration_service.exception.EdiParseException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Optional;
 import org.smooks.Smooks;
+import org.smooks.api.ExecutionContext;
+import org.smooks.io.sink.JavaSink;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.xml.sax.SAXException;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Optional;
 
 @Configuration
 public class SmooksConfig {
@@ -35,4 +38,17 @@ public class SmooksConfig {
                     e);
         }
     }
+
+    @Bean
+    public ExecutionContext executionContext(Smooks smooksIftminEngine) {
+        try (smooksIftminEngine) {
+            return smooksIftminEngine.createExecutionContext();
+        }
+    }
+
+    @Bean
+    public JavaSink javaSink() {
+        return new JavaSink();
+    }
+
 }

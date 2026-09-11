@@ -54,8 +54,7 @@ public class EdiArchiveServiceImpl implements EdiArchiveService {
     }
 
     @Override
-    @Retryable(retryFor = {
-            EdiProcessingException.class}, backoff = @Backoff(delay = 1000, multiplier = 2.0))
+    @Retryable(retryFor = EdiProcessingException.class, backoff = @Backoff(delay = 1000, multiplier = 2.0))
     public String saveRawPayload(@NotNull String objectKey, @NotNull byte[] payload,
             String contentType) {
         if (payload.length == 0) {

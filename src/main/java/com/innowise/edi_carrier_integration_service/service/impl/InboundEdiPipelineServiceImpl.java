@@ -21,7 +21,7 @@ public class InboundEdiPipelineServiceImpl implements InboundEdiPipelineService 
     @Value("${edi.pipeline.max-payload-bytes:20971520}")
     private long maxAllowedPayloadBytes;
 
-    private final SMimeSecurityService sMimeSecurityService;
+    private final SMimeDecryptionService sMimeDecryptionService;
     private final EdiParserService ediParserService;
     private final EdiArchiveService ediArchiveService;
     private final As2MdnGeneratorService as2MdnGeneratorService;
@@ -47,7 +47,7 @@ public class InboundEdiPipelineServiceImpl implements InboundEdiPipelineService 
         String s3ObjectKey = ediArchiveService.saveRawPayload(objectKey, rawSmimeBytes,
                 "application/pkcs7-mime");
 
-        byte[] decryptedEdifactPayload = sMimeSecurityService.decryptAndVerify(rawSmimeBytes,
+        byte[] decryptedEdifactPayload = sMimeDecryptionService.decrypt(rawSmimeBytes,
                 recipientAlias, senderAlias);
 
         var instructionDto = ediParserService.parseIftmin(decryptedEdifactPayload);

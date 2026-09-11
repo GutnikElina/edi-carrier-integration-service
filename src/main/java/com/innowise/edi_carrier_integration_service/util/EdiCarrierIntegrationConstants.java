@@ -1,6 +1,6 @@
 package com.innowise.edi_carrier_integration_service.util;
 
-public final class EdiCarrierIntegrationConst {
+public final class EdiCarrierIntegrationConstants {
 
     public static final String MDN_TEMPLATE = """
             AS2-Version: 1.2
@@ -28,6 +28,6 @@ public final class EdiCarrierIntegrationConst {
             --%s--
             """;
 
-    private EdiCarrierIntegrationConst() {
+    private EdiCarrierIntegrationConstants() {
     }
 }
