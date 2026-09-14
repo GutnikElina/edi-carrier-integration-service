@@ -50,8 +50,10 @@ class InboundEdiPipelineServiceImplTest {
     void processInboundSmimeMessage_success() {
         byte[] rawPayload = "smime-data".getBytes();
         byte[] decryptedPayload = "edifact-data".getBytes();
-        IftminInstructionDto expectedDto = new IftminInstructionDto(null, null, null, null, null,
-                null, null);
+        IftminInstructionDto expectedDto = new IftminInstructionDto(null, null,
+                null, null,
+                null, null,
+                null);
 
         when(camelMessage.getHeader("Message-ID", String.class)).thenReturn("msg-123");
         when(camelMessage.getHeader("AS2-From", String.class)).thenReturn("SENDER_AS2");
@@ -63,20 +65,21 @@ class InboundEdiPipelineServiceImplTest {
         when(ediArchiveService.saveRawPayload(anyString(), eq(rawPayload),
                 eq("application/pkcs7-mime")))
             .thenReturn("raw/123.smime");
-        when(sMimeDecryptionService.decrypt(rawPayload, "RECIPIENT_ALIAS", "SENDER_ALIAS")) // Hardcoded
-                                                                                            // aliases
-                                                                                            // from
-                                                                                            // TODO
+        when(sMimeDecryptionService.decrypt(eq(rawPayload), anyString(), anyString()))
             .thenReturn(decryptedPayload);
-        when(as2MdnGeneratorService.generateMdn(decryptedPayload, "msg-123", "SENDER_AS2",
-                "RECEIVER_AS2"))
+
+        when(as2MdnGeneratorService.generateMdn(eq(decryptedPayload), eq("msg-123"),
+                eq("SENDER_AS2"),
+                eq("RECEIVER_AS2")))
             .thenReturn("generated-mdn");
+
         when(ediParserService.parseIftmin(decryptedPayload)).thenReturn(expectedDto);
 
         pipeline.processInboundSmimeMessage(camelMessage);
 
         verify(ediArchiveService).saveRawPayload(anyString(), eq(rawPayload),
                 eq("application/pkcs7-mime"));
+        verify(sMimeDecryptionService).decrypt(eq(rawPayload), anyString(), anyString());
         verify(ediParserService).parseIftmin(decryptedPayload);
     }
 

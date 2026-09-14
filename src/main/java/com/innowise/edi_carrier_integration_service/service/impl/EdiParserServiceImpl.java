@@ -37,7 +37,7 @@ public class EdiParserServiceImpl implements EdiParserService {
         }
 
         log.info("Successfully parsed EDIFACT IFTMIN payload, controlNumber: {}",
-                result.controlNumber());
+                result.getControlNumber());
         return result;
     }
 }

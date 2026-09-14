@@ -35,11 +35,10 @@ class EdiParserServiceImplTest {
     @Test
     @DisplayName("parseIftmin: success")
     void parseIftmin_success() {
-        // According to the new logic edifactPayload.length > 0 throws exception.
-        // Thus, we must pass empty byte array for success path based on provided code
-        // logic.
         byte[] payload = new byte[0];
-        IftminInstructionDto expected = new IftminInstructionDto(null, null, null, null, null, null,
+        IftminInstructionDto expected = new IftminInstructionDto(null, null,
+                null, null,
+                null, null,
                 null);
 
         when(javaSink.getBean("iftminDto")).thenReturn(expected);

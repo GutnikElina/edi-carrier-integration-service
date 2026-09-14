@@ -1,14 +1,14 @@
 package com.innowise.edi_carrier_integration_service;
 
-import com.innowise.edi_carrier_integration_service.service.impl.EdiArchiveServiceImpl;
+import com.innowise.edi_carrier_integration_service.service.InboundEdiPipelineService;
 import com.innowise.edi_carrier_integration_service.service.KeyManagementService;
+import com.innowise.edi_carrier_integration_service.service.impl.EdiArchiveServiceImpl;
 import io.minio.MinioClient;
 import org.apache.camel.CamelContext;
 import org.apache.camel.EndpointInject;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.test.spring.junit5.UseAdviceWith;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,7 +18,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 @SpringBootTest
-@UseAdviceWith
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class CamelAs2ServerApplicationTests {
 
@@ -28,6 +27,9 @@ class CamelAs2ServerApplicationTests {
     private EdiArchiveServiceImpl ediArchiveService;
     @MockitoBean
     private MinioClient minioClient;
+
+    @MockitoBean
+    private InboundEdiPipelineService inboundEdiPipelineService;
 
     @Autowired
     private CamelContext camelContext;
@@ -67,10 +69,8 @@ class CamelAs2ServerApplicationTests {
                 """;
 
         mockResult.expectedMessageCount(1);
-        mockResult.expectedBodiesReceived(edi);
-
-        producerTemplate.sendBody("direct:as2-test", edi);
-
+        mockResult.expectedBodiesReceived("");
+        producerTemplate.sendBody("direct:as2-test", edi.getBytes());
         mockResult.assertIsSatisfied();
     }
 
@@ -78,9 +78,7 @@ class CamelAs2ServerApplicationTests {
     void shouldProcessEmptyBody() throws Exception {
         mockResult.expectedMessageCount(1);
         mockResult.expectedBodiesReceived("");
-
-        producerTemplate.sendBody("direct:as2-test", "");
-
+        producerTemplate.sendBody("direct:as2-test", new byte[0]);
         mockResult.assertIsSatisfied();
     }
 }

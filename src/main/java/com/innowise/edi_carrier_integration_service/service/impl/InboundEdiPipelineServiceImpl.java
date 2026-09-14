@@ -70,7 +70,7 @@ public class InboundEdiPipelineServiceImpl implements InboundEdiPipelineService 
 
         var instructionDto = ediParserService.parseIftmin(decryptedEdifactPayload);
         log.info("Pipeline decrypted and parsed IFTMIN document. ControlNumber: {}",
-                instructionDto.controlNumber());
+                instructionDto.getControlNumber());
 
         return CompletableFuture
             .completedFuture(new InboundEdiResult(instructionDto, mdn, s3ObjectKey));

@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -24,6 +25,7 @@ class MdnProcessorNoOpTest {
         when(exchange.getMessage()).thenReturn(message);
         when(message.getBody(String.class)).thenReturn("dummy-edi");
 
-        assertThat(() -> processor.process(exchange)).doesNotThrowAnyException();
+        assertThatCode(() -> processor.process(exchange))
+            .doesNotThrowAnyException();
     }
 }
