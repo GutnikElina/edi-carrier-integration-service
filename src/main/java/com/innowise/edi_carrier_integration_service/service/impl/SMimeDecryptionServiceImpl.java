@@ -54,5 +54,4 @@ public class SMimeDecryptionServiceImpl implements SMimeDecryptionService {
         Objects.requireNonNull(recipientAlias, "Recipient KeyStore alias must not be null");
         Objects.requireNonNull(senderAlias, "Sender TrustStore alias must not be null");
     }
-
 }

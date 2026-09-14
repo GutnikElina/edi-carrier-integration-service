@@ -19,5 +19,4 @@ public class SMimeValidatorServiceImpl implements SMimeValidatorService {
         validatorUtil.validateMimeType(decryptedPart);
         validatorUtil.verifySignatures(senderAlias, multipart);
     }
-
 }

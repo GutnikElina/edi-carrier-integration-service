@@ -18,29 +18,26 @@ public class MessageIntegrityServiceImpl implements MessageIntegrityService {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256",
                     BouncyCastleProvider.PROVIDER_NAME);
-            int len = payload.length;
-            for (int i = 0; i < len; i++) {
-                byte b = payload[i];
+
+            byte previouseByte = -1;
+
+            for (byte b : payload) {
                 if (b == '\r') {
                     digest.update((byte) '\r');
                     digest.update((byte) '\n');
-                    if (i + 1 < len && payload[i + 1] == '\n') {
-                        i++;
-                    }
                 } else if (b == '\n') {
-                    digest.update((byte) '\r');
-                    digest.update((byte) '\n');
+                    if (previouseByte != '\r') {
+                        digest.update((byte) '\r');
+                        digest.update((byte) '\n');
+                    }
                 } else {
                     digest.update(b);
                 }
+                previouseByte = b;
             }
-            byte[] hash = digest.digest();
-            return Base64.getEncoder()
-                .encodeToString(hash);
+            return Base64.getEncoder().encodeToString(digest.digest());
         } catch (NoSuchAlgorithmException | NoSuchProviderException ex) {
             throw new MessageIntegrityCheckException(ex.getMessage());
         }
-
     }
-
 }

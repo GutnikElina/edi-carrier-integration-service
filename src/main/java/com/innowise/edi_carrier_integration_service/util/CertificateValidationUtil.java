@@ -22,7 +22,7 @@ import java.util.List;
 
 @Slf4j
 @Component
-public class CertificateUtil {
+public class CertificateValidationUtil {
 
     public X509Certificate generateSignerCertificate(Store<X509CertificateHolder> certificates,
             SignerInformation signer) {
@@ -52,13 +52,15 @@ public class CertificateUtil {
                 log.debug("Direct Trust verified: Signer certificate is identical to Trust Anchor");
                 return;
             }
-            var certList = generateCertificateList(signerCertificate, certificatesStore);
-            var buildParams = configureBuildParams(trustedCertificate, signerCertificate, certList);
+            var certificates = generateCertificateList(signerCertificate, certificatesStore);
+            var buildParams = configureBuildParams(trustedCertificate, signerCertificate,
+                    certificates);
             var certificatePathBuilder = CertPathBuilder.getInstance("PKIX",
                     BouncyCastleProvider.PROVIDER_NAME);
-            var result = (PKIXCertPathBuilderResult) certificatePathBuilder.build(buildParams);
+            var certificatePath = (PKIXCertPathBuilderResult) certificatePathBuilder
+                .build(buildParams);
             log.debug("Validated intermediate certificate chain to anchor: {}",
-                    result.getTrustAnchor()
+                    certificatePath.getTrustAnchor()
                         .getTrustedCert()
                         .getSubjectX500Principal());
         } catch (Exception e) {
@@ -87,8 +89,8 @@ public class CertificateUtil {
 
     private List<X509Certificate> generateCertificateList(X509Certificate signerCertificate,
             Store<X509CertificateHolder> certificatesStore) {
-        List<X509Certificate> certList = new ArrayList<>();
-        certList.add(signerCertificate);
+        List<X509Certificate> certificates = new ArrayList<>();
+        certificates.add(signerCertificate);
 
         var converter = new JcaX509CertificateConverter()
             .setProvider(BouncyCastleProvider.PROVIDER_NAME);
@@ -100,21 +102,21 @@ public class CertificateUtil {
                     try {
                         return converter.getCertificate(holder);
                     } catch (CertificateException e) {
-                        throw new RuntimeException(e);
+                        throw new CertificateValidationException("Can't get certificate");
                     }
                 })
                 .toList();
-            certList.addAll(storeCerts);
+            certificates.addAll(storeCerts);
         }
-        return certList;
+        return certificates;
     }
 
     private CertPathParameters configureBuildParams(X509Certificate trustedCertificate,
             X509Certificate signerCertificate,
-            List<X509Certificate> certList) {
+            List<X509Certificate> certificates) {
         try {
             CertStore intermediateCertStore = CertStore.getInstance("Collection",
-                    new CollectionCertStoreParameters(certList),
+                    new CollectionCertStoreParameters(certificates),
                     BouncyCastleProvider.PROVIDER_NAME);
 
             var anchor = new TrustAnchor(trustedCertificate, null);

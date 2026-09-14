@@ -30,14 +30,14 @@ public class EdiParserServiceImpl implements EdiParserService {
 
         smooksIftminEngine.filterSource(executionContext, new ByteSource(edifactPayload), javaSink);
 
-        var result = (IftminInstructionDto) javaSink.getBean("iftminDto");
-        if (result == null) {
+        var iftminDto = (IftminInstructionDto) javaSink.getBean("iftminDto");
+        if (iftminDto == null) {
             throw new EdiParseException("Smooks parsing executed successfully but produced null" +
                     " Java Bean binding");
         }
 
         log.info("Successfully parsed EDIFACT IFTMIN payload, controlNumber: {}",
-                result.getControlNumber());
-        return result;
+                iftminDto.getControlNumber());
+        return iftminDto;
     }
 }

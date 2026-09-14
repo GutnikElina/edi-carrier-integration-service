@@ -3,6 +3,10 @@ package com.innowise.edi_carrier_integration_service.service.impl;
 import com.innowise.edi_carrier_integration_service.exception.EdiSecurityException;
 import com.innowise.edi_carrier_integration_service.service.KeyManagementService;
 import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -11,9 +15,6 @@ import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
@@ -43,14 +44,9 @@ public class LocalKeyStoreService implements KeyManagementService {
 
     @PostConstruct
     public void init() {
-        loadStore(
-                keyStorePath,
-                keyStoreType,
-                keyStorePassword,
-                "KeyStore",
+        loadStore(keyStorePath, keyStoreType, keyStorePassword, "KeyStore",
                 store -> {
-                    processAliases(
-                            store,
+                    processAliases(store,
                             alias -> {
                                 if (store.isKeyEntry(alias)) {
                                     Optional
@@ -67,25 +63,18 @@ public class LocalKeyStoreService implements KeyManagementService {
                             certificateCache.size());
                 });
 
-        loadStore(
-                trustStorePath,
-                trustStoreType,
-                trustStorePassword,
-                "TrustStore",
+        loadStore(trustStorePath, trustStoreType, trustStorePassword, "TrustStore",
                 store -> {
-                    processAliases(
-                            store,
+                    processAliases(store,
                             alias -> Optional
                                 .ofNullable((X509Certificate) store.getCertificate(alias))
                                 .ifPresent(cert -> trustCertificateCache.put(alias, cert)));
-                    log.info(
-                            "TrustStore initialized successfully. Loaded {} trusted certificates.",
+                    log.info("TrustStore initialized successfully. Loaded {} trusted certificates.",
                             trustCertificateCache.size());
                 });
     }
 
-    private void loadStore(
-            String path, String type, char[] password, String storeName,
+    private void loadStore(String path, String type, char[] password, String storeName,
             KeyStoreConsumer consumer) {
         try (InputStream is = Files.newInputStream(Paths.get(path))) {
             KeyStore store = KeyStore.getInstance(type);

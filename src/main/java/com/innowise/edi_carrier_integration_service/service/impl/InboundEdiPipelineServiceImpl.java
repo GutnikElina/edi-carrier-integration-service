@@ -104,5 +104,4 @@ public class InboundEdiPipelineServiceImpl implements InboundEdiPipelineService 
                             + " bytes");
         }
     }
-
 }

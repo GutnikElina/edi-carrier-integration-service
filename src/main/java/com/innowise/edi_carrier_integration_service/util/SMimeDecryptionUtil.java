@@ -33,10 +33,10 @@ public class SMimeDecryptionUtil {
         try {
             var enveloped = new SMIMEEnveloped(encryptedPart);
             var privateKey = keyManagementService.getPrivateKey(recipientAlias);
-            var recipientCert = keyManagementService.getCertificate(recipientAlias);
+            var recipientCertificate = keyManagementService.getCertificate(recipientAlias);
 
             var recipients = enveloped.getRecipientInfos();
-            var recipientId = new JceKeyTransRecipientId(recipientCert);
+            var recipientId = new JceKeyTransRecipientId(recipientCertificate);
             var recipient = Optional.ofNullable(recipients.get(recipientId))
                 .orElseThrow(
                         () -> new EdiSecurityException("No recipient matching certificate alias '"
@@ -63,5 +63,4 @@ public class SMimeDecryptionUtil {
             throw new PayloadExtractionException(e.getMessage());
         }
     }
-
 }

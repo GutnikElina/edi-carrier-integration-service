@@ -23,7 +23,7 @@ import java.security.cert.X509Certificate;
 public class SMimeValidatorUtil {
 
     private final KeyManagementService keyManagementService;
-    private final CertificateUtil certificateUtil;
+    private final CertificateValidationUtil certificateValidationUtil;
 
     public void validateMimeType(MimeBodyPart decryptedPart) {
         try {
@@ -58,9 +58,11 @@ public class SMimeValidatorUtil {
     private void verifySigner(SignerInformation signerInfo,
             Store<X509CertificateHolder> certificates,
             X509Certificate trustedCertificate) {
-        var signerCertificate = certificateUtil.generateSignerCertificate(certificates, signerInfo);
 
-        certificateUtil.validateCertificateChain(signerCertificate, trustedCertificate,
+        var signerCertificate = certificateValidationUtil.generateSignerCertificate(certificates,
+                signerInfo);
+
+        certificateValidationUtil.validateCertificateChain(signerCertificate, trustedCertificate,
                 certificates);
 
         if (!isVerified(signerInfo, signerCertificate)) {
@@ -72,6 +74,7 @@ public class SMimeValidatorUtil {
 
     private boolean isVerified(SignerInformation signerInfo,
             X509Certificate signerCertificate) {
+
         try {
             return signerInfo.verify(
                     new JcaSimpleSignerInfoVerifierBuilder()

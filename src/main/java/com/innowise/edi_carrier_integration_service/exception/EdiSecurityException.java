@@ -1,6 +1,6 @@
 package com.innowise.edi_carrier_integration_service.exception;
 
-public class EdiSecurityException extends RuntimeException {
+public class EdiSecurityException extends EdiProcessingException {
     public EdiSecurityException(String message) {
         super(message);
     }
